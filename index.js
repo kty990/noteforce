@@ -2,9 +2,6 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater } = require('elec
 const path = require('path');
 const fs = require('fs');
 
-const discord = require('./dist/discord/main.js');
-const twitch = require('./dist/twitch/twi.js');
-
 const EXTENSION = "dbm"
 
 class GraphicsWindow {
@@ -46,20 +43,9 @@ class GraphicsWindow {
             },
         });
 
-        discord.Action.add_handler((...args) => {
-            this.window.webContents.send("action", args);
-        })
-
         // Set the window icon
         const iconPath = path.join(__dirname, './dist/images/icon.png');
         this.window.setIcon(iconPath);
-
-        const placeholder = (prompt) => {
-            let func = () => {
-                console.log(prompt);
-            }
-            return func;
-        }
 
         const toggleDevTools = () => {
             this.window.webContents.toggleDevTools();
@@ -84,8 +70,6 @@ class GraphicsWindow {
                 console.log("save as")
             }
         }
-
-        await populateThemes(this.window).catch(console.error);
 
         const menuTemplate = [
             {
@@ -115,7 +99,7 @@ class GraphicsWindow {
 
         this.window.setMenu(menu);
 
-        this.window.loadFile('./dist/html/index.html');
+        this.window.loadFile('./dist/html/main.html');
 
         this.window.on('closed', () => {
             this.window = null;
