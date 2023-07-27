@@ -1,0 +1,48 @@
+{
+  "name": "notebook2electricboogaloo",
+  "version": "0.1.5",
+  "main": "./index.js",
+  "author": "Ty Kutcher",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder",
+    "package": "electron-packager . \"Discord Bot Maker\" --platform=win32 --arch=x64 --out=build/ --overwrite"
+  },
+  "build": {
+    "appId": "me.notebook.editor",
+    "productName": "Note Force",
+    "directories": {
+      "output": "dist/installers"
+    },
+    "extraFiles": [],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "./dist/images/icon.ico",
+      "fileAssociations": [
+        {
+          "ext": "nbf",
+          "name": "Note Force",
+          "description": "Write your class notes, link subjects via tags, and more!"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "license": "license.md"
+    }
+  },
+  "keywords": [],
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "discord.js": "^14.0.3"
+  },
+  "devDependencies": {
+    "electron": "25.2.0"
+  }
+}
