@@ -4,6 +4,8 @@ const fs = require('fs');
 
 const EXTENSION = "dbm"
 
+let devToolsOpened = false;
+
 class GraphicsWindow {
     constructor() {
         try {
@@ -36,10 +38,11 @@ class GraphicsWindow {
             height: 600,
             minWidth: 800,   // Set the minimum width
             minHeight: 600,  // Set the minimum height
+            frame: false, // Remove the default window frame (including the title bar)
             webPreferences: {
                 nodeIntegration: true,
                 spellcheck: false,
-                preload: path.join(__dirname, './dist/js/preload.js')
+                preload: path.join(__dirname, './dist/js/preload.js'),
             },
         });
 
@@ -71,30 +74,7 @@ class GraphicsWindow {
             }
         }
 
-        const menuTemplate = [
-            {
-                label: 'File',
-                submenu: [
-                    { label: 'New', click: newFile },
-                    { label: 'Open', click: open },
-                    { label: 'Refresh', role: 'reload' },
-                    { type: 'separator' },
-                    { label: 'Save', click: save },
-                    { label: 'Save As', click: saveas },
-                    { type: 'separator' },
-                    { label: 'Exit', click: app.quit }
-                ]
-            },
-            {
-                label: 'View',
-                submenu: [
-                    { label: 'Toggle Developer Tools', accelerator: 'CmdOrCtrl+Shift+I', click: toggleDevTools }
-                ]
-            }
-            // Add more menu items as needed
-        ];
-
-        const menu = Menu.buildFromTemplate(menuTemplate);
+        const menu = Menu.buildFromTemplate([]);
         Menu.setApplicationMenu(menu);
 
         this.window.setMenu(menu);
@@ -177,13 +157,13 @@ class Element {
 class Notepad {
     constructor(order = 0, name = "New Note") {
         this.order = order;
-        this.content = [Element];
-        this.visuals = [String];
+        this.content = [];
+        this.visuals = [];
         this.name = name;
     }
 
     update() {
-        this.visuals = [String];
+        this.visuals = [];
         for (const e of this.content) {
             this.visuals.push(e.createVisuals());
         }
@@ -191,8 +171,41 @@ class Notepad {
     }
 }
 
+const graphicsWindow = new GraphicsWindow();
+const notebook = new Notebook();
+
 ipcMain.on("page-refresh::set-timeout", (event, ...args) => {
 
+})
+
+ipcMain.on("close", () => {
+    graphicsWindow.window.close();
+})
+
+ipcMain.on("minimize", () => {
+    graphicsWindow.window.minimize();
+})
+
+ipcMain.on("dev-refresh", () => {
+    graphicsWindow.window.reload();
+})
+
+ipcMain.on("NewNote", () => {
+    let n = new Notepad(notebook.pages.length, `New Note (${notebook.pages.length + 1})`);
+    notebook.AddPage(n);
+    graphicsWindow.window.webContents.send("NewNote", { name: n.name, order: n.order });
+})
+
+ipcMain.on("toggle-dev-tools", () => {
+
+    // Toggle the DevTools visibility based on its current state
+    if (devToolsOpened) {
+        graphicsWindow.window.webContents.closeDevTools();
+        devToolsOpened = false;
+    } else {
+        graphicsWindow.window.webContents.openDevTools();
+        devToolsOpened = true;
+    }
 })
 
 app.on('window-all-closed', () => {
@@ -200,8 +213,3 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
-
-
-
-const graphicsWindow = new GraphicsWindow();
-const notebook = new Notebook();
