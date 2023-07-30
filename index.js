@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const storage = require('./dist/data.json');
 
 const EXTENSION = "dbm"
 
@@ -110,31 +111,18 @@ class Notebook {
         }
     }
 
-    serialize(type) {
-        switch (type) {
-            case "docx":
-            //
-            case "txt":
-            //
-            case "pdf":
-            //
-            case "":
-            //
+    serialize() {
+        let data = {
+            "notes": this.pages,
+            "filename": this.filename
         }
+        storage = data;
+        fs.writeFileSync('./dist/data.json', JSON.stringify(storage, null, 2));
     }
 
     deserialize() {
-        let filetype = this.filename.split(".")[this.filename.split(".").length - 1];
-        switch (type) {
-            case "docx":
-            //
-            case "txt":
-            //
-            case "pdf":
-            //
-            case "":
-            //
-        }
+        this.pages = storage.pages;
+        this.filename = storage.filename;
     }
 }
 
@@ -157,8 +145,8 @@ class Element {
 class Notepad {
     constructor(order = 0, name = "New Note") {
         this.order = order;
-        this.content = [];
-        this.visuals = [];
+        this.content = []; // type element
+        this.visuals = []; // type string
         this.name = name;
     }
 
@@ -193,6 +181,8 @@ ipcMain.on("dev-refresh", () => {
 ipcMain.on("NewNote", () => {
     let n = new Notepad(notebook.pages.length, `New Note (${notebook.pages.length + 1})`);
     notebook.AddPage(n);
+    storage.notes.push({ name: n.name, order: n.order, visuals: n.visuals })
+    fs.writeFileSync('./dist/data.json', JSON.stringify(storage, null, 2));
     graphicsWindow.window.webContents.send("NewNote", { name: n.name, order: n.order });
 })
 
