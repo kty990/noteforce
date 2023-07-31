@@ -2,8 +2,24 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater } = require('elec
 const path = require('path');
 const fs = require('fs');
 const storage = require('./dist/data.json');
+const { EmailListener, EmailSender } = require("./dist/js/email.js");
 
-const EXTENSION = "dbm"
+const EXTENSION = "nff"
+
+const Listener = new EmailListener({
+    user: 'your_email_address',
+    password: 'your_email_password',
+    host: 'imap.gmail.com',
+    port: 993,
+    tls: true,
+});
+const Sender = new EmailSender({
+    service: 'gmail',
+    auth: {
+        user: 'your_gmail_address',
+        pass: 'your_gmail_password',
+    },
+});
 
 let devToolsOpened = false;
 
@@ -203,3 +219,7 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+
+Listener.on("newMessage", () => {
+
+})
