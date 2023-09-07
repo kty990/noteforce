@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "build": "electron-builder",
-    "package": "electron-packager . \"Discord Bot Maker\" --platform=win32 --arch=x64 --out=build/ --overwrite"
+    "package": "electron-packager . \"Note Force\" --platform=win32 --arch=x64 --out=build/ --overwrite",
+    "wbuild": "webpack"
   },
   "build": {
     "appId": "me.notebook.editor",
@@ -41,6 +42,12 @@
   "description": "",
   "dependencies": {},
   "devDependencies": {
+    "@babel/core": "^7.22.11",
+    "@babel/plugin-syntax-jsx": "^7.22.5",
+    "@babel/preset-react": "^7.22.5",
+    "babel-loader": "^9.1.3",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
     "electron": "25.2.0"
   }
 }
