@@ -10,6 +10,7 @@
     --border: #202020;
     --menu: #192d19;
     --sub-menu: #2c4f2c;
+    --active: #055205;
 }
 
 html,
@@ -234,4 +235,14 @@ body {
 #new-notepad:hover {
     background-color: var(--sub-menu);
     cursor: pointer;
+}
+
+.notepad-button {
+    color: var(--text);
+    background-color: #011b01;
+    width: 100%;
+    height: fit-content;
+    text-align: center;
+    padding: 0;
+    margin: 0;
 }
