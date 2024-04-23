@@ -1,17 +1,53 @@
 <!DOCTYPE html>
-<html prefix="og: http://ogp.me/ns#">
+<html>
 
 <head>
-    <!-- Meta Data -->
-    <title>Projects</title>
+    <meta charset="UTF-8">
+    <title>Discord Bot Maker</title>
     <link rel="stylesheet" href="../css/home.css">
-    <link rel="stylesheet" href="../css/site.css">
+    <link rel="stylesheet" href="../css/program.css">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'">
 </head>
 
 <body>
-    <div id="root"></div>
-    <script src="../site_bundle.js"></script>
-    <script src="../js/site.js"></script>
+    <div id="drag"></div>
+    <div class="title-bar">
+        <div class="title-bar-content">
+            <!-- <img src="../images/icon.png"> -->
+            <p>Noteforce</p>
+        </div>
+        <div class="title-bar-buttons">
+            <div class="title-bar-button" id="minimize">_</div>
+            <div class="title-bar-button" id="close">X</div>
+        </div>
+    </div>
+    <div id="file-bar">
+        <div id="file-menu">
+            <p id="file">File</p>
+            <div id="file-options" style="visibility: hidden;">
+                <p>New</p>
+                <p>Open</p>
+                <p>Save</p>
+            </div>
+        </div>
+        <div id="insert-menu">
+            <p id="insert">Insert</p>
+            <div id="insert-options" style="visibility: hidden;">
+                <p>Note Link</p>
+                <p>URL Link</p>
+            </div>
+        </div>
+    </div>
+    <div id="textarea" contenteditable="true"></div>
+    <div id="notepads">
+        <p id="new-notepad">New +</p>
+        <div id="contents">
+
+        </div>
+    </div>
+
+    <script src="../js/home.js"></script>
+    <script src="../js/program.js"></script>
 </body>
 
 </html>

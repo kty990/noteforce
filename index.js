@@ -2,24 +2,24 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater } = require('elec
 const path = require('path');
 const fs = require('fs');
 const storage = require('./dist/data.json');
-const { EmailListener, EmailSender } = require("./dist/js/email.js");
+// const { EmailListener, EmailSender } = require("./dist/js/email.js");
 
 const EXTENSION = "nff"
 
-const Listener = new EmailListener({
-    user: 'your_email_address',
-    password: 'your_email_password',
-    host: 'imap.gmail.com',
-    port: 993,
-    tls: true,
-});
-const Sender = new EmailSender({
-    service: 'gmail',
-    auth: {
-        user: 'your_gmail_address',
-        pass: 'your_gmail_password',
-    },
-});
+// const Listener = new EmailListener({
+//     user: 'your_email_address',
+//     password: 'your_email_password',
+//     host: 'imap.gmail.com',
+//     port: 993,
+//     tls: true,
+// });
+// const Sender = new EmailSender({
+//     service: 'gmail',
+//     auth: {
+//         user: 'your_gmail_address',
+//         pass: 'your_gmail_password',
+//     },
+// });
 
 let devToolsOpened = false;
 
@@ -67,36 +67,12 @@ class GraphicsWindow {
         const iconPath = path.join(__dirname, './dist/images/icon.png');
         this.window.setIcon(iconPath);
 
-        const toggleDevTools = () => {
-            this.window.webContents.toggleDevTools();
-        }
-
-        const newFile = async () => {
-            console.log("new")
-        }
-
-        const open = async () => {
-            console.log("open")
-        }
-
-        const save = () => {
-            if (true) {
-                console.log("Save")
-            }
-        }
-
-        const saveas = () => {
-            if (true) {
-                console.log("save as")
-            }
-        }
-
         const menu = Menu.buildFromTemplate([]);
         Menu.setApplicationMenu(menu);
 
         this.window.setMenu(menu);
 
-        this.window.loadFile('./dist/html/main.html');
+        this.window.loadFile('./dist/html/home.html');
 
         this.window.on('closed', () => {
             this.window = null;
@@ -220,6 +196,6 @@ app.on('window-all-closed', () => {
     }
 });
 
-Listener.on("newMessage", () => {
+// Listener.on("newMessage", () => {
 
-})
+// })
