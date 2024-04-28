@@ -8,9 +8,11 @@
     --text-hover: #7d7d7d;
     --body: #0a0d0a;
     --border: #202020;
+    --button: #031b00;
     --menu: #192d19;
     --sub-menu: #2c4f2c;
     --active: #055205;
+    --interaction: #203e20;
 }
 
 html,
@@ -250,11 +252,28 @@ body {
 .popup {
     position: absolute;
     z-index: 99;
-    top: 35vh;
-    left: 36vw;
+    background-color: var(--menu);
 }
 
 .popup>#content {
     height: 90%;
     width: 100%;
+    position: absolute;
+    top: 10%;
+}
+
+.button {
+    background-color: var(--button);
+    border-color: var(--border);
+    border-style: solid;
+    margin-left: auto;
+    margin-right: auto;
+    color: var(--text);
+    padding: 5px;
+}
+
+.button:hover {
+    color: var(--text-hover);
+    background-color: var(--sub-menu);
+    cursor: pointer;
 }

@@ -1,25 +1,8 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const storage = require('./dist/data.json');
-// const { EmailListener, EmailSender } = require("./dist/js/email.js");
+const notepads = require('./notepads.json');
 
-const EXTENSION = "nff"
-
-// const Listener = new EmailListener({
-//     user: 'your_email_address',
-//     password: 'your_email_password',
-//     host: 'imap.gmail.com',
-//     port: 993,
-//     tls: true,
-// });
-// const Sender = new EmailSender({
-//     service: 'gmail',
-//     auth: {
-//         user: 'your_gmail_address',
-//         pass: 'your_gmail_password',
-//     },
-// });
 
 let devToolsOpened = false;
 
@@ -81,78 +64,15 @@ class GraphicsWindow {
     }
 }
 
-class Notebook {
-    constructor(filename = null) {
-        // open the file and store it
-        this.pages = [];
-        this.filename = filename;
-    }
-
-    AddPage(page) {
-        this.pages.push(page);
-    }
-
-    DelPage(page) {
-        this.pages.splice(this.pages.indexOf(page), 1);
-    }
-
-    RefreahPages(window) {
-        for (const page of this.pages) {
-            page.update();
-            window.webContents.send("page-refresh", page);
-        }
-    }
-
-    serialize() {
-        let data = {
-            "notes": this.pages,
-            "filename": this.filename
-        }
-        storage = data;
-        fs.writeFileSync('./dist/data.json', JSON.stringify(storage, null, 2));
-    }
-
-    deserialize() {
-        this.pages = storage.pages;
-        this.filename = storage.filename;
-    }
-}
-
-class Element {
-    constructor(type = "default", content = "", position = { x: 0, y: 0 }, color = "#00000000") {
-        this.type = type;
-        this.content = content;
-        this.position = position;
-        this.color = color;
-    }
-
-    createVisuals() {
-        return `
-        <span style="position:fixed;border-color:${this.color};border-width:1px;border-style:solid;left:${this.position.x};top:${this.position.y};">
-        ${this.content}
-        </span>`
-    }
-}
-
-class Notepad {
-    constructor(order = 0, name = "New Note") {
-        this.order = order;
-        this.content = []; // type element
-        this.visuals = []; // type string
-        this.name = name;
-    }
-
-    update() {
-        this.visuals = [];
-        for (const e of this.content) {
-            this.visuals.push(e.createVisuals());
-        }
-        // Refresh the visuals using the updated backend information
-    }
-}
-
 const graphicsWindow = new GraphicsWindow();
-const notebook = new Notebook();
+
+function save() {
+    fs.writeFileSync('./notepads.json', JSON.stringify(notepads, null, 2));
+}
+
+function getTimestamp() {
+    return Date.now();
+}
 
 ipcMain.on("page-refresh::set-timeout", (event, ...args) => {
 
@@ -168,14 +88,6 @@ ipcMain.on("minimize", () => {
 
 ipcMain.on("dev-refresh", () => {
     graphicsWindow.window.reload();
-})
-
-ipcMain.on("NewNote", () => {
-    let n = new Notepad(notebook.pages.length, `New Note (${notebook.pages.length + 1})`);
-    notebook.AddPage(n);
-    storage.notes.push({ name: n.name, order: n.order, visuals: n.visuals })
-    fs.writeFileSync('./dist/data.json', JSON.stringify(storage, null, 2));
-    graphicsWindow.window.webContents.send("NewNote", { name: n.name, order: n.order });
 })
 
 ipcMain.on("toggle-dev-tools", () => {
@@ -196,6 +108,17 @@ app.on('window-all-closed', () => {
     }
 });
 
-// Listener.on("newMessage", () => {
-
-// })
+ipcMain.on("newNotepad", (ev, ...args) => {
+    let name = args[0] || null;
+    if (name) {
+        let template = {
+            name: name,
+            plainText: '',
+            html: '',
+            lastUpdated: getTimestamp()
+        }
+        notepads.notes.push(template);
+        save();
+    }
+    graphicsWindow.window.webContents.send("newNotepad");
+})
