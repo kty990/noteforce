@@ -3,21 +3,52 @@ const file_options = document.getElementById("file-options");
 
 const insertmenu = document.getElementById("insert");
 const insert_options = document.getElementById("insert-options");
+const insertURL = document.getElementById("url");
 
 let sidebar = document.getElementById("notepads").querySelector("#contents");
 
+const links = {};
+let linkCount = 0;
 
 const new_notepad = document.getElementById("new-notepad");
 const notepads = document.getElementById("contents");
 
 const textarea = document.getElementById("textarea");
-let selectedNotepad = null; // Still have to do this
+let selectedNotepad = { element: null, name: null }; // Still have to do this
 const save = document.getElementById("save");
 
 function newNotepad(name) {
     return `<p class='notepad-button'>${name}</p>`
 }
 
+function LoadListener(sideTemplate) {
+    sideTemplate.addEventListener("click", () => {
+        try {
+            selectedNotepad.element.style.backgroundColor = null;
+        } catch (e) { }
+        selectedNotepad.element = sideTemplate;
+        selectedNotepad.name = selectedNotepad.textContent;
+    })
+}
+
+insertURL.addEventListener("click", async () => {
+    let w = await newPopupWindow();
+    w = adjustPopup(w, 2);
+    document.body.appendChild(w);
+    w.querySelector(".button").addEventListener("click", () => {
+        let url = w.querySelector("#content").querySelector("input").value;
+        console.log(w.querySelector("#content").querySelector("input").value);
+        if (url.length > 0) {
+            let link = loadURL_Link(url);
+            link.addEventListener("click", e => {
+                // Open in default browser, or in popup iframe
+                window.api.send("open_url", url);
+            })
+            textarea.appendChild(link);
+            w.remove();
+        }
+    })
+})
 
 filemenu.addEventListener("click", () => {
     insert_options.style.visibility = 'hidden';
@@ -45,6 +76,7 @@ new_notepad.addEventListener("click", async () => {
             let template = document.createElement("p");
             template.classList.add("notepad-button");
             template.textContent = name;
+            LoadListener(template);
             sidebar.appendChild(template);
         }
         w.remove();
@@ -73,7 +105,6 @@ function adjustPopup(w, mode = 1) {
     switch (mode) {
         case 1:
             // New notepad
-
             let p = document.createElement("p");
             p.style.margin = '0';
             p.style.marginLeft = 'auto';
@@ -104,9 +135,6 @@ function adjustPopup(w, mode = 1) {
             submit.classList.add('button');
             submit.innerHTML = 'Submit';
 
-
-
-
             w.querySelector("#content").style.display = 'flex';
             w.querySelector("#content").style.flexDirection = 'column';
             w.style.borderStyle = 'solid';
@@ -115,5 +143,57 @@ function adjustPopup(w, mode = 1) {
             w.querySelector("#content").appendChild(name);
             w.querySelector("#content").appendChild(submit);
             return w;
+        case 2:
+            // New notepad
+            let pp = document.createElement("p");
+            pp.style.margin = '0';
+            pp.style.marginLeft = 'auto';
+            pp.style.marginRight = 'auto';
+            pp.textContent = 'ENTER A URL'
+            pp.style.fontSize = '25px';
+            pp.style.fontWeight = 'bold';
+            pp.style.marginBottom = '20px';
+
+
+            let url = document.createElement("input");
+            url.style.backgroundColor = "var(--interaction)";
+            url.style.width = "70%";
+            url.style.height = "30px";
+            url.style.position = "relative";
+            url.style.margin = '0';
+            // name.style.top = '30%';
+            url.style.marginLeft = 'auto';
+            url.style.marginRight = 'auto';
+            url.style.textAlign = 'center';
+            url.style.outline = 'unset';
+            url.style.color = 'var(--text)';
+            url.style.borderColor = 'var(--border)';
+            url.style.borderStyle = 'solid';
+            url.style.marginBottom = '20px';
+
+            let s = document.createElement("div");
+            s.classList.add('button');
+            s.innerHTML = 'Submit';
+
+            w.querySelector("#content").style.display = 'flex';
+            w.querySelector("#content").style.flexDirection = 'column';
+            w.style.borderStyle = 'solid';
+            w.style.borderColor = 'var(--border)';
+            w.querySelector("#content").appendChild(pp);
+            w.querySelector("#content").appendChild(url);
+            w.querySelector("#content").appendChild(s);
+            return w;
     }
+}
+
+function loadURL_Link(url) {
+    links[++linkCount] = url;
+    let link = document.createElement("a");
+    link.href = url;
+    link.textContent = url;
+    link.id = linkCount;
+    link.classList.add('link');
+    link.contentEditable = 'false';
+    return link;
+    // return `<a href="${url}" class='link'>${url}</a>` // might need to change method
 }

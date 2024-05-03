@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater } = require('elec
 const path = require('path');
 const fs = require('fs');
 const notepads = require('./notepads.json');
+const openurl = require('openurl');
 
 
 let devToolsOpened = false;
@@ -121,4 +122,31 @@ ipcMain.on("newNotepad", (ev, ...args) => {
         save();
     }
     graphicsWindow.window.webContents.send("newNotepad");
+})
+ipcMain.on("save", (ev, ...args) => {
+    try {
+        let { content, notepad } = args[0];
+        let index = -1
+        for (let i = 0; i < notepads.notes.length; i++) {
+            let x = notepads.notes[i];
+            if (x.name == notepad) {
+                index = i;
+                break;
+            }
+        }
+        if (index != -1) {
+            notepads.notes[index].html = content;
+            notepads.notes[index].plainText = content.replace(/<[^>]*>/g, ''); // Remove tags
+            notepads.notes[index].lastUpdated = getTimestamp();
+            save();
+        }
+    } catch (e) { }
+})
+
+ipcMain.on("open_url", (ev, ...data) => {
+    let url = data[0];
+    console.log("open_url", url);
+    openurl(url, e => {
+        console.log(e);
+    });
 })

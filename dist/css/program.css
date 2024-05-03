@@ -277,3 +277,17 @@ body {
     background-color: var(--sub-menu);
     cursor: pointer;
 }
+
+.link {
+    color: var(--text);
+    background-color: var(--interaction);
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+}
+
+.link:hover {
+    color: var(--text-hover);
+    background-color: var(--menu);
+    cursor: pointer;
+}

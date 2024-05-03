@@ -42,7 +42,8 @@
   "description": "",
   "dependencies": {
     "node-imap": "^0.9.6",
-    "notebook2electricboogaloo": "file:"
+    "notebook2electricboogaloo": "file:",
+    "openurl": "^1.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",
