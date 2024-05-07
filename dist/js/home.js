@@ -19,16 +19,21 @@ let selectedNotepad = { element: null, name: null }; // Still have to do this
 const save = document.getElementById("save");
 
 function newNotepad(name) {
-    return `<p class='notepad-button'>${name}</p>`
+    let e = document.createElement("p");
+    e.classList.add("notepad-button");
+    e.textContent = name;
+    return e;
+    // return `<p class='notepad-button'>${name}</p>`
 }
 
 function LoadListener(sideTemplate) {
     sideTemplate.addEventListener("click", () => {
         try {
             selectedNotepad.element.style.backgroundColor = null;
-        } catch (e) { }
+        } catch (e) { console.log(e) }
         selectedNotepad.element = sideTemplate;
-        selectedNotepad.name = selectedNotepad.textContent;
+        selectedNotepad.name = sideTemplate.textContent;
+        selectedNotepad.element.style.backgroundColor = 'var(--interaction)'
         window.api.send("notepadSelected", selectedNotepad.name);
     })
 }
@@ -75,9 +80,7 @@ async function addNotepad() {
         let name = w.querySelector("input").value;
         if (name.length > 0) {
             await window.api.invoke("newNotepad", name);
-            let template = document.createElement("p");
-            template.classList.add("notepad-button");
-            template.textContent = name;
+            let template = newNotepad(name);
             LoadListener(template);
             sidebar.appendChild(template);
         }
@@ -215,5 +218,6 @@ window.api.on("load_html", html => { // Not implemented on server side
 window.api.on("AddToSideMenu", name => {
     console.log("Attempting to load from save: ", name);
     let note = newNotepad(name);
-    sidebar.innerHTML += note;
+    LoadListener(note);
+    sidebar.appendChild(note);
 })

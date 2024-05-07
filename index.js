@@ -157,11 +157,13 @@ ipcMain.on("open_url", (ev, ...data) => {
 })
 
 ipcMain.on("notepadSelected", (ev, ...data) => {
+    console.log(data);
     for (let i = 0; i < notepads.notes.length; i++) {
         let x = notepads.notes[i];
         if (x.name == data[0]) {
             notepads.notes[i].isCurrentlySelected = true;
             graphicsWindow.window.webContents.send("load_html", notepads.notes[i].html)
+            console.log(`Selected new notepad: ${x}`);
         } else {
             notepads.notes[i].isCurrentlySelected = false;
         }
