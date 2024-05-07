@@ -1,3 +1,18 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "name": "test",
+      "plainText": "",
+      "html": "",
+      "lastUpdated": 1715045533489,
+      "isCurrentlySelected": false
+    },
+    {
+      "name": "asdf",
+      "plainText": "",
+      "html": "",
+      "lastUpdated": 1715045601433,
+      "isCurrentlySelected": false
+    }
+  ]
 }

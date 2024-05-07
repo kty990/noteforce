@@ -11,6 +11,7 @@ const links = {};
 let linkCount = 0;
 
 const new_notepad = document.getElementById("new-notepad");
+const new_notepad_file = document.getElementById("new-notepad-file");
 const notepads = document.getElementById("contents");
 
 const textarea = document.getElementById("textarea");
@@ -28,6 +29,7 @@ function LoadListener(sideTemplate) {
         } catch (e) { }
         selectedNotepad.element = sideTemplate;
         selectedNotepad.name = selectedNotepad.textContent;
+        window.api.send("notepadSelected", selectedNotepad.name);
     })
 }
 
@@ -61,10 +63,10 @@ insertmenu.addEventListener("click", () => {
 })
 
 save.addEventListener("click", () => {
-    window.api.send("save", { content: textarea.innerHTML, notepad: selectedNotepad });
+    window.api.send("save", { content: textarea.innerHTML, notepad: selectedNotepad.name });
 })
 
-new_notepad.addEventListener("click", async () => {
+async function addNotepad() {
     // Display a popup window (as a div, not an actual new window) to get the name of the notepad.
     let w = await newPopupWindow();
     w = adjustPopup(w);
@@ -83,6 +85,14 @@ new_notepad.addEventListener("click", async () => {
     })
 
     document.body.appendChild(w);
+}
+
+new_notepad.addEventListener("click", () => {
+    addNotepad();
+})
+
+new_notepad_file.addEventListener("click", () => {
+    addNotepad();
 })
 
 
@@ -197,3 +207,13 @@ function loadURL_Link(url) {
     return link;
     // return `<a href="${url}" class='link'>${url}</a>` // might need to change method
 }
+
+window.api.on("load_html", html => { // Not implemented on server side
+    textarea.innerHTML = html;
+})
+
+window.api.on("AddToSideMenu", name => {
+    console.log("Attempting to load from save: ", name);
+    let note = newNotepad(name);
+    sidebar.innerHTML += note;
+})

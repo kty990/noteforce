@@ -4,7 +4,6 @@ const fs = require('fs');
 const notepads = require('./notepads.json');
 const openurl = require('openurl');
 
-
 let devToolsOpened = false;
 
 class GraphicsWindow {
@@ -17,8 +16,13 @@ class GraphicsWindow {
 
             this.currentProject = null;
 
-            app.on('ready', () => {
-                this.createWindow();
+            app.on('ready', async () => {
+                await this.createWindow();
+                setTimeout(() => {
+                    for (let notepad of notepads.notes) {
+                        this.window.webContents.send("AddToSideMenu", notepad.name);
+                    }
+                }, 1000);
             });
         } catch (e) {
             const { Notification } = require('electron')
@@ -61,7 +65,6 @@ class GraphicsWindow {
         this.window.on('closed', () => {
             this.window = null;
         });
-
     }
 }
 
@@ -116,7 +119,8 @@ ipcMain.on("newNotepad", (ev, ...args) => {
             name: name,
             plainText: '',
             html: '',
-            lastUpdated: getTimestamp()
+            lastUpdated: getTimestamp(),
+            isCurrentlySelected: false
         }
         notepads.notes.push(template);
         save();
@@ -135,18 +139,31 @@ ipcMain.on("save", (ev, ...args) => {
             }
         }
         if (index != -1) {
+            console.log("Saving");
             notepads.notes[index].html = content;
             notepads.notes[index].plainText = content.replace(/<[^>]*>/g, ''); // Remove tags
             notepads.notes[index].lastUpdated = getTimestamp();
             save();
         }
-    } catch (e) { }
+    } catch (e) { console.error(e); }
 })
 
 ipcMain.on("open_url", (ev, ...data) => {
     let url = data[0];
     console.log("open_url", url);
-    openurl(url, e => {
+    openurl.open(url, e => {
         console.log(e);
     });
+})
+
+ipcMain.on("notepadSelected", (ev, ...data) => {
+    for (let i = 0; i < notepads.notes.length; i++) {
+        let x = notepads.notes[i];
+        if (x.name == data[0]) {
+            notepads.notes[i].isCurrentlySelected = true;
+            graphicsWindow.window.webContents.send("load_html", notepads.notes[i].html)
+        } else {
+            notepads.notes[i].isCurrentlySelected = false;
+        }
+    }
 })
