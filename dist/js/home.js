@@ -69,8 +69,11 @@ function newNotepad(name) {
         insert_options.style.visibility = (insert_options.style.visibility == 'hidden') ? 'visible' : 'hidden';
     })
 
-    save.addEventListener("click", () => {
-        window.api.send("save", { content: textarea.innerHTML, notepad: selectedNotepad.name });
+    save.addEventListener("click", async () => {
+        let result = await window.api.invoke("save", { content: textarea.innerHTML, notepad: selectedNotepad.name });
+        alert(result);
+        let notif = newNotification("Success", `${selectedNotepad.name} saved successfully!`);
+        addNotification(notif);
     })
 
     async function addNotepad() {
@@ -269,6 +272,22 @@ function newNotification(title = "", description = "", color = "var(--interactio
     return container;
 }
 
+function addNotification(notification) {
+    return new Promise((resolve, reject) => {
+        try {
+            console.log('Adding notif');
+            notifContainer.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+                console.log("removing notif");
+                resolve();
+            }, 3000)
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 function generateRandomString(length) {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
@@ -279,20 +298,12 @@ function generateRandomString(length) {
 }
 
 
-document.addEventListener('keydown', (event) => {
+document.addEventListener('keydown', async (event) => {
     if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
-        window.api.send("save", { content: textarea.innerHTML, notepad: selectedNotepad.name });
-    } else if (event.ctrlKey && event.key == 'd') {
-        event.preventDefault();
-        let testDesc = '';
-        for (let i = 0; i < 15; i++) {
-            testDesc += generateRandomString(Math.ceil(Math.random() * 20))
-        }
-        let notif = newNotification("test notification", testDesc);
-        notifContainer.appendChild(notif);
-        setTimeout(() => {
-            notif.remove();
-        }, 3000)
+        let result = await window.api.invoke("save", { content: textarea.innerHTML, notepad: selectedNotepad.name });
+        alert(result);
+        let notif = newNotification("Success", `${selectedNotepad.name} saved successfully!`);
+        addNotification(notif);
     }
 });

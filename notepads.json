@@ -2,16 +2,16 @@
   "notes": [
     {
       "name": "test",
-      "plainText": "",
-      "html": "",
-      "lastUpdated": 1715449904077,
+      "plainText": "this is a test of test, and of saving notifications 2",
+      "html": "this is a test of test, and of saving notifications 2",
+      "lastUpdated": 1715491325168,
       "isCurrentlySelected": false
     },
     {
       "name": "test2",
-      "plainText": "this is a test of test2Google",
-      "html": "this is a test of test2<div><br></div><div><br></div><a href=\"https://www.google.com\" id=\"1\" class=\"link\" contenteditable=\"false\">Google</a>",
-      "lastUpdated": 1715452892023,
+      "plainText": "this is a test of test2asdfasdfasdfasdfasdasdGoogle",
+      "html": "this is a test of test2<div>asdfasdfasdfasdfasdasd</div><div><br></div><a href=\"https://www.google.com\" id=\"1\" class=\"link\" contenteditable=\"false\">Google</a>",
+      "lastUpdated": 1715491365783,
       "isCurrentlySelected": true
     }
   ]

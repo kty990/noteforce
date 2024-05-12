@@ -144,8 +144,12 @@ ipcMain.on("save", (ev, ...args) => {
             notepads.notes[index].plainText = content.replace(/<[^>]*>/g, ''); // Remove tags
             notepads.notes[index].lastUpdated = getTimestamp();
             save();
+            graphicsWindow.window.webContents.send("save", true);
         }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error(e);
+        graphicsWindow.window.webContents.send("save", false);
+    }
 })
 
 ipcMain.on("open_url", (ev, ...data) => {
