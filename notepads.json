@@ -2,17 +2,17 @@
   "notes": [
     {
       "name": "test",
-      "plainText": "testing the test notepad save featurehttps://www.google.com",
-      "html": "testing the test notepad save feature<div><br></div><div><br></div><a href=\"https://www.google.com\" id=\"1\" class=\"link\" contenteditable=\"false\">https://www.google.com</a>",
-      "lastUpdated": 1715049136715,
-      "isCurrentlySelected": true
-    },
-    {
-      "name": "asdf",
       "plainText": "",
       "html": "",
-      "lastUpdated": 1715045601433,
+      "lastUpdated": 1715449904077,
       "isCurrentlySelected": false
+    },
+    {
+      "name": "test2",
+      "plainText": "this is a test of test2Google",
+      "html": "this is a test of test2<div><br></div><div><br></div><a href=\"https://www.google.com\" id=\"1\" class=\"link\" contenteditable=\"false\">Google</a>",
+      "lastUpdated": 1715452892023,
+      "isCurrentlySelected": true
     }
   ]
 }

@@ -291,3 +291,123 @@ body {
     background-color: var(--menu);
     cursor: pointer;
 }
+
+#textarea {
+    position: fixed;
+    left: 0;
+    top: 110px;
+    /* Change to 60 for a new toolbar */
+    width: 90vw;
+    height: calc(100vh - 110px);
+    background-color: #202520;
+    color: var(--text);
+    outline: unset;
+}
+
+#toolbar {
+    position: fixed;
+    left: 0;
+    width: 90vw;
+    top: 80px;
+    /* Change to 60 for a new toolbar */
+    height: 30px;
+    background-color: var(--sub-menu);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#toolbar>p {
+    background-color: var(--interaction);
+    margin: 0;
+    padding: 0;
+    width: fit-content;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 14px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    justify-self: center;
+    align-self: center;
+    color: var(--text);
+    margin-left: 5px;
+}
+
+#toolbar>#color {
+    background-color: var(--interaction);
+    margin: 0;
+    padding: 0;
+    width: fit-content;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 14px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    justify-self: center;
+    align-self: center;
+    color: var(--text);
+    margin-left: 5px;
+    display: flex;
+    align-items: center;
+}
+
+#toolbar>#color:hover {
+    background-color: var(--active);
+    color: var(--text-hover);
+    cursor: pointer;
+}
+
+#toolbar>#color>#preview {
+    width: 10px;
+    height: 10px;
+    margin-left: 6px;
+    background-color: var(--text);
+}
+
+#toolbar>p:hover {
+    background-color: var(--active);
+    color: var(--text-hover);
+    cursor: pointer;
+}
+
+#notification-container {
+    position: fixed;
+    right: 10vw;
+    width: 10vw;
+    height: 100vh;
+    top: 0;
+    display: flex;
+    z-index: 50;
+    flex-direction: column;
+}
+
+.notification {
+    width: 10vw;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--menu);
+    margin-bottom: 10px;
+}
+
+.notification>p {
+    font-size: 13px;
+    width: 100%;
+    overflow-y: visible;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    color: var(--text);
+}
+
+.notification>#title {
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.notification>#description {
+    padding-bottom: 5px;
+    overflow-y: visible;
+    word-wrap: break-word;
+}
