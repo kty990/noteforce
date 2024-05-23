@@ -24,6 +24,9 @@ const save = document.getElementById("save");
 
 const gradient = document.getElementById("gradient");
 const hueSelect = document.getElementById("hue-select");
+const colorValueDisplay = document.getElementById("colorValue");
+const selector = document.getElementById("selector");
+const preview = document.getElementById("preview");
 
 {
     function newNotepad(name) {
@@ -372,7 +375,7 @@ function createGradient(hue) {
 
 }
 
-function createHueRange(canvas, line = -1) {
+function createHueRange(canvas, line = 0) {
     const ctx = canvas.getContext('2d');
 
     const width = canvas.width;
@@ -386,13 +389,18 @@ function createHueRange(canvas, line = -1) {
         ctx.fillRect(x, 0, step, height); // Fill rectangle with current color
     }
 
-    if (line != -1) {
-        ctx.fillStyle = "rgb(0,0,0)";
-        ctx.fillRect(line, 0, 2, height);
-    }
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.fillRect(line, 0, 2, height);
 }
+function rgbToHex(r, g, b) {
+    const componentToHex = (c) => {
+        const hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
 
-createHueRange(hueSelect);
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+createHueRange(hueSelect, 0);
 createGradient(0);
 
 
@@ -412,4 +420,20 @@ gradient.addEventListener("click", e => {
     console.log(e);
     let color = hslToRgb(currentHue, e.offsetX, (100 - e.offsetY) / 2);
     console.log(color, e.xOffset);
+    colorValueDisplay.textContent = rgbToHex(color.r, color.g, color.b);
+    preview.style.backgroundColor = colorValueDisplay.textContent;
+
+    let ctx = gradient.getContext("2d");
+    ctx.clearRect(0, 0, gradient.width, gradient.height);
+    createGradient(currentHue);
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
+    ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
+})
+
+color.addEventListener("click", (e) => {
+    console.log(e);
+    if (e.srcElement.id == "package" || e.srcElement.id == "color" || e.srcElement.id == "colorValue" || e.srcElement.id == "preview") {
+        selector.style.display = (selector.style.display == 'none') ? 'block' : 'none';
+    }
 })
