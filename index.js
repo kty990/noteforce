@@ -1,8 +1,7 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const notepads = require('./notepads.json');
-const openurl = require('openurl');
 
 let devToolsOpened = false;
 
@@ -78,98 +77,99 @@ function getTimestamp() {
     return Date.now();
 }
 
-ipcMain.on("page-refresh::set-timeout", (event, ...args) => {
+// Hooks
+{
+    ipcMain.on("page-refresh::set-timeout", (event, ...args) => {
 
-})
+    })
 
-ipcMain.on("close", () => {
-    graphicsWindow.window.close();
-})
+    ipcMain.on("close", () => {
+        graphicsWindow.window.close();
+    })
 
-ipcMain.on("minimize", () => {
-    graphicsWindow.window.minimize();
-})
+    ipcMain.on("minimize", () => {
+        graphicsWindow.window.minimize();
+    })
 
-ipcMain.on("dev-refresh", () => {
-    graphicsWindow.window.reload();
-})
+    ipcMain.on("dev-refresh", () => {
+        graphicsWindow.window.reload();
+    })
 
-ipcMain.on("toggle-dev-tools", () => {
+    ipcMain.on("toggle-dev-tools", () => {
 
-    // Toggle the DevTools visibility based on its current state
-    if (devToolsOpened) {
-        graphicsWindow.window.webContents.closeDevTools();
-        devToolsOpened = false;
-    } else {
-        graphicsWindow.window.webContents.openDevTools();
-        devToolsOpened = true;
-    }
-})
-
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-});
-
-ipcMain.on("newNotepad", (ev, ...args) => {
-    let name = args[0] || null;
-    if (name) {
-        let template = {
-            name: name,
-            plainText: '',
-            html: '',
-            lastUpdated: getTimestamp(),
-            isCurrentlySelected: false
+        // Toggle the DevTools visibility based on its current state
+        if (devToolsOpened) {
+            graphicsWindow.window.webContents.closeDevTools();
+            devToolsOpened = false;
+        } else {
+            graphicsWindow.window.webContents.openDevTools();
+            devToolsOpened = true;
         }
-        notepads.notes.push(template);
-        save();
-    }
-    graphicsWindow.window.webContents.send("newNotepad");
-})
-ipcMain.on("save", (ev, ...args) => {
-    try {
-        let { content, notepad } = args[0];
-        let index = -1
+    })
+
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin') {
+            app.quit();
+        }
+    });
+
+    ipcMain.on("newNotepad", (ev, ...args) => {
+        let name = args[0] || null;
+        if (name) {
+            let template = {
+                name: name,
+                plainText: '',
+                html: '',
+                lastUpdated: getTimestamp(),
+                isCurrentlySelected: false
+            }
+            notepads.notes.push(template);
+            save();
+        }
+        graphicsWindow.window.webContents.send("newNotepad");
+    })
+    ipcMain.on("save", (ev, ...args) => {
+        try {
+            let { content, notepad } = args[0];
+            let index = -1
+            for (let i = 0; i < notepads.notes.length; i++) {
+                let x = notepads.notes[i];
+                if (x.name == notepad) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index != -1) {
+                console.log("Saving");
+                notepads.notes[index].html = content;
+                notepads.notes[index].plainText = content.replace(/<[^>]*>/g, ''); // Remove tags
+                notepads.notes[index].lastUpdated = getTimestamp();
+                save();
+                graphicsWindow.window.webContents.send("save", true);
+            }
+        } catch (e) {
+            console.error(e);
+            graphicsWindow.window.webContents.send("save", false);
+        }
+    })
+
+    ipcMain.on("open_url", (ev, ...data) => {
+        let url = data[0];
+        console.log("open_url", url);
+        shell.openExternal(url);
+    })
+
+    ipcMain.on("notepadSelected", (ev, ...data) => {
+        console.log(data);
         for (let i = 0; i < notepads.notes.length; i++) {
             let x = notepads.notes[i];
-            if (x.name == notepad) {
-                index = i;
-                break;
+            if (x.name == data[0]) {
+                notepads.notes[i].isCurrentlySelected = true;
+                graphicsWindow.window.webContents.send("load_html", notepads.notes[i].html)
+                console.log(`Selected new notepad: ${x}`);
+            } else {
+                notepads.notes[i].isCurrentlySelected = false;
             }
         }
-        if (index != -1) {
-            console.log("Saving");
-            notepads.notes[index].html = content;
-            notepads.notes[index].plainText = content.replace(/<[^>]*>/g, ''); // Remove tags
-            notepads.notes[index].lastUpdated = getTimestamp();
-            save();
-            graphicsWindow.window.webContents.send("save", true);
-        }
-    } catch (e) {
-        console.error(e);
-        graphicsWindow.window.webContents.send("save", false);
-    }
-})
-
-ipcMain.on("open_url", (ev, ...data) => {
-    let url = data[0];
-    console.log("open_url", url);
-    openurl.open(url, e => {
-        console.log(e);
-    });
-})
-
-ipcMain.on("notepadSelected", (ev, ...data) => {
-    console.log(data);
-    for (let i = 0; i < notepads.notes.length; i++) {
-        let x = notepads.notes[i];
-        if (x.name == data[0]) {
-            notepads.notes[i].isCurrentlySelected = true;
-            graphicsWindow.window.webContents.send("load_html", notepads.notes[i].html)
-            console.log(`Selected new notepad: ${x}`);
-        } else {
-            notepads.notes[i].isCurrentlySelected = false;
-        }
-    }
-})
+    })
+}
