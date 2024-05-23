@@ -431,6 +431,46 @@ gradient.addEventListener("click", e => {
     ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
 })
 
+function onDrag(canvas, callback) {
+    let down = false;
+    canvas.addEventListener("mousedown", () => {
+        down = true;
+    })
+
+    canvas.addEventListener("mousemove", e => {
+        if (down) {
+            callback(e);
+        }
+    })
+
+    canvas.addEventListener("mouseup", () => {
+        down = false;
+    })
+}
+
+onDrag(gradient, e => {
+    let color = hslToRgb(currentHue, e.offsetX, (100 - e.offsetY) / 2);
+    console.log(color, e.xOffset);
+    colorValueDisplay.textContent = rgbToHex(color.r, color.g, color.b);
+    preview.style.backgroundColor = colorValueDisplay.textContent;
+
+    let ctx = gradient.getContext("2d");
+    ctx.clearRect(0, 0, gradient.width, gradient.height);
+    createGradient(currentHue);
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
+    ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
+})
+
+onDrag(hueSelect, e => {
+    let newHue = (e.offsetX / 100) * 360;
+    currentHue = newHue;
+    // Display line showing where the hue is
+    createGradient(newHue);
+    createHueRange(hueSelect, (newHue / 360) * hueSelect.width);
+    // console.log(newHue);
+})
+
 color.addEventListener("click", (e) => {
     console.log(e);
     if (e.srcElement.id == "package" || e.srcElement.id == "color" || e.srcElement.id == "colorValue" || e.srcElement.id == "preview") {
