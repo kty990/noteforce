@@ -13,6 +13,7 @@ const links = {};
 let linkCount = 0;
 
 let currentHue = 0;
+let activeFont = "Arial";
 
 const new_notepad = document.getElementById("new-notepad");
 const new_notepad_file = document.getElementById("new-notepad-file");
@@ -27,6 +28,12 @@ const hueSelect = document.getElementById("hue-select");
 const colorValueDisplay = document.getElementById("colorValue");
 const selector = document.getElementById("selector");
 const preview = document.getElementById("preview");
+
+const color = document.getElementById("color");
+
+const font = document.getElementById("font");
+const currentFont = font.querySelector("#current");
+const fontSelect = font.querySelector("#select");
 
 {
     function newNotepad(name) {
@@ -265,215 +272,277 @@ const preview = document.getElementById("preview");
         sidebar.appendChild(note);
     })
 
-}
+    function newNotification(title = "", description = "", color = "var(--interaction)") {
+        let container = document.createElement("div");
+        container.classList.add("notification");
+        let t = document.createElement("p");
+        t.textContent = title;
+        t.id = 'title';
+        t.style.backgroundColor = color;
+        let d = document.createElement("p");
+        d.textContent = description;
+        d.id = 'description';
+        container.appendChild(t);
+        container.appendChild(d);
+        return container;
+    }
 
-function newNotification(title = "", description = "", color = "var(--interaction)") {
-    let container = document.createElement("div");
-    container.classList.add("notification");
-    let t = document.createElement("p");
-    t.textContent = title;
-    t.id = 'title';
-    t.style.backgroundColor = color;
-    let d = document.createElement("p");
-    d.textContent = description;
-    d.id = 'description';
-    container.appendChild(t);
-    container.appendChild(d);
-    return container;
-}
+    function addNotification(notification, lifetime = 3000) {
+        return new Promise((resolve, reject) => {
+            try {
+                notifContainer.appendChild(notification);
+                setTimeout(() => {
+                    notification.remove();
+                    resolve();
+                }, lifetime)
+            } catch (e) {
+                reject(e);
+            }
+        })
+    }
 
-function addNotification(notification, lifetime = 3000) {
-    return new Promise((resolve, reject) => {
-        try {
-            notifContainer.appendChild(notification);
-            setTimeout(() => {
-                notification.remove();
-                resolve();
-            }, lifetime)
-        } catch (e) {
-            reject(e);
+    function generateRandomString(length) {
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let result = "";
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
-    })
-}
-
-function generateRandomString(length) {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * characters.length));
+        return result;
     }
-    return result;
-}
 
 
-document.addEventListener('keydown', async (event) => {
-    if (event.ctrlKey && event.key === 's') {
-        event.preventDefault();
-        let result = await window.api.invoke("save", { content: textarea.innerHTML, notepad: selectedNotepad.name });
-        let notif = newNotification((result) ? "Success" : "Error", (result) ? `${selectedNotepad.name} saved successfully!` : `Error saving ${selectedNotepad.name}`, (result) ? undefined : '#7d0000');
-        addNotification(notif);
-    } else if (event.ctrlKey && event.key == 'n') {
-        addNotepad().catch(() => { });
-    }
-});
-function hslToRgb(h, s, l) {
-    // Normalize the hue to be between 0 and 360
-    h = h % 360;
-    if (h < 0) h += 360;
+    document.addEventListener('keydown', async (event) => {
+        if (event.ctrlKey && event.key === 's') {
+            event.preventDefault();
+            let result = await window.api.invoke("save", { content: textarea.innerHTML, notepad: selectedNotepad.name });
+            let notif = newNotification((result) ? "Success" : "Error", (result) ? `${selectedNotepad.name} saved successfully!` : `Error saving ${selectedNotepad.name}`, (result) ? undefined : '#7d0000');
+            addNotification(notif);
+        } else if (event.ctrlKey && event.key == 'n') {
+            addNotepad().catch(() => { });
+        }
+    });
+    function hslToRgb(h, s, l) {
+        // Normalize the hue to be between 0 and 360
+        h = h % 360;
+        if (h < 0) h += 360;
 
-    // Normalize the saturation and lightness to be between 0 and 1
-    s /= 100;
-    l /= 100;
+        // Normalize the saturation and lightness to be between 0 and 1
+        s /= 100;
+        l /= 100;
 
-    let r, g, b;
+        let r, g, b;
 
-    if (s === 0) {
-        // Achromatic (grey)
-        r = g = b = l;
-    } else {
-        const hueToRgb = (p, q, t) => {
-            if (t < 0) t += 1;
-            if (t > 1) t -= 1;
-            if (t < 1 / 6) return p + (q - p) * 6 * t;
-            if (t < 1 / 2) return q;
-            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-            return p;
+        if (s === 0) {
+            // Achromatic (grey)
+            r = g = b = l;
+        } else {
+            const hueToRgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                return p;
+            };
+
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+
+            r = hueToRgb(p, q, h / 360 + 1 / 3);
+            g = hueToRgb(p, q, h / 360);
+            b = hueToRgb(p, q, h / 360 - 1 / 3);
+        }
+
+        // Convert the results to the range 0-255 and return
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255)
         };
-
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        const p = 2 * l - q;
-
-        r = hueToRgb(p, q, h / 360 + 1 / 3);
-        g = hueToRgb(p, q, h / 360);
-        b = hueToRgb(p, q, h / 360 - 1 / 3);
     }
 
-    // Convert the results to the range 0-255 and return
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
-}
-
-function createGradient(hue) {
+    function createGradient(hue) {
 
 
 
-    let ctx = gradient.getContext('2d');
-    for (let y = 0; y < 100; y++) {
-        for (let x = 0; x < 100; x++) {
-            // row.push({ h: hue, s: x, l: y });
-            const light = y / 2; //x > 50 &&
-            const sat = x;
-            const { r, g, b } = hslToRgb(hue, sat, light);
-            // console.log(r, g, b);
-            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-            ctx.fillRect(x, 100 - y, 1, 1);
+        let ctx = gradient.getContext('2d');
+        for (let y = 0; y < 100; y++) {
+            for (let x = 0; x < 100; x++) {
+                // row.push({ h: hue, s: x, l: y });
+                const light = y / 2; //x > 50 &&
+                const sat = x;
+                const { r, g, b } = hslToRgb(hue, sat, light);
+                // console.log(r, g, b);
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fillRect(x, 100 - y, 1, 1);
+            }
         }
+
     }
 
-}
+    function createHueRange(canvas, line = 0) {
+        const ctx = canvas.getContext('2d');
 
-function createHueRange(canvas, line = 0) {
-    const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        ctx.clearRect(0, 0, width, height);
+        const step = width / 360; // Pixel width per hue value
 
-    const width = canvas.width;
-    const height = canvas.height;
-    ctx.clearRect(0, 0, width, height);
-    const step = width / 360; // Pixel width per hue value
+        for (let x = 0; x < width; x++) {
+            const hue = (x / step) % 360; // Calculate hue value based on x position
+            ctx.fillStyle = `hsl(${hue}, 100%, 50%)`; // Set fill style with current hue
+            ctx.fillRect(x, 0, step, height); // Fill rectangle with current color
+        }
 
-    for (let x = 0; x < width; x++) {
-        const hue = (x / step) % 360; // Calculate hue value based on x position
-        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`; // Set fill style with current hue
-        ctx.fillRect(x, 0, step, height); // Fill rectangle with current color
+        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.fillRect(line, 0, 2, height);
     }
+    function rgbToHex(r, g, b) {
+        const componentToHex = (c) => {
+            const hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
 
-    ctx.fillStyle = "rgb(0,0,0)";
-    ctx.fillRect(line, 0, 2, height);
-}
-function rgbToHex(r, g, b) {
-    const componentToHex = (c) => {
-        const hex = c.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
+        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
     }
-
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-}
-createHueRange(hueSelect, 0);
-createGradient(0);
+    createHueRange(hueSelect, 0);
+    createGradient(0);
 
 
-hueSelect.addEventListener("click", e => {
-    let newHue = (e.offsetX / 100) * 360;
-    currentHue = newHue;
-    // Display line showing where the hue is
-    createGradient(newHue);
-    createHueRange(hueSelect, (newHue / 360) * hueSelect.width);
-    console.log(newHue);
-})
-
-gradient.addEventListener("click", e => {
-    //     const light = y / 2; //x > 50 &&
-    //     const sat = x;
-    //     const { r, g, b } = hslToRgb(hue, sat, light);
-    console.log(e);
-    let color = hslToRgb(currentHue, e.offsetX, (100 - e.offsetY) / 2);
-    console.log(color, e.xOffset);
-    colorValueDisplay.textContent = rgbToHex(color.r, color.g, color.b);
-    preview.style.backgroundColor = colorValueDisplay.textContent;
-
-    let ctx = gradient.getContext("2d");
-    ctx.clearRect(0, 0, gradient.width, gradient.height);
-    createGradient(currentHue);
-    ctx.fillStyle = "rgb(0,0,0)";
-    ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
-    ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
-})
-
-function onDrag(canvas, callback) {
-    let down = false;
-    canvas.addEventListener("mousedown", () => {
-        down = true;
+    hueSelect.addEventListener("click", e => {
+        let newHue = (e.offsetX / 100) * 360;
+        currentHue = newHue;
+        // Display line showing where the hue is
+        createGradient(newHue);
+        createHueRange(hueSelect, (newHue / 360) * hueSelect.width);
+        console.log(newHue);
     })
 
-    canvas.addEventListener("mousemove", e => {
-        if (down) {
-            callback(e);
+    gradient.addEventListener("click", e => {
+        //     const light = y / 2; //x > 50 &&
+        //     const sat = x;
+        //     const { r, g, b } = hslToRgb(hue, sat, light);
+        console.log(e);
+        let color = hslToRgb(currentHue, e.offsetX, (100 - e.offsetY) / 2);
+        console.log(color, e.xOffset);
+        colorValueDisplay.textContent = rgbToHex(color.r, color.g, color.b);
+        preview.style.backgroundColor = colorValueDisplay.textContent;
+
+        let ctx = gradient.getContext("2d");
+        ctx.clearRect(0, 0, gradient.width, gradient.height);
+        createGradient(currentHue);
+        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
+        ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
+    })
+
+    function onDrag(canvas, callback) {
+        let down = false;
+        canvas.addEventListener("mousedown", () => {
+            down = true;
+        })
+
+        canvas.addEventListener("mousemove", e => {
+            if (down) {
+                callback(e);
+            }
+        })
+
+        canvas.addEventListener("mouseup", () => {
+            down = false;
+        })
+    }
+
+    onDrag(gradient, e => {
+        let color = hslToRgb(currentHue, e.offsetX, (100 - e.offsetY) / 2);
+        console.log(color, e.xOffset);
+        colorValueDisplay.textContent = rgbToHex(color.r, color.g, color.b);
+        preview.style.backgroundColor = colorValueDisplay.textContent;
+
+        let ctx = gradient.getContext("2d");
+        ctx.clearRect(0, 0, gradient.width, gradient.height);
+        createGradient(currentHue);
+        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
+        ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
+    })
+
+    onDrag(hueSelect, e => {
+        let newHue = (e.offsetX / 100) * 360;
+        currentHue = newHue;
+        // Display line showing where the hue is
+        createGradient(newHue);
+        createHueRange(hueSelect, (newHue / 360) * hueSelect.width);
+        // console.log(newHue);
+    })
+
+    color.addEventListener("click", (e) => {
+        console.log(e);
+        if (e.srcElement.id == "package" || e.srcElement.id == "color" || e.srcElement.id == "colorValue" || e.srcElement.id == "preview") {
+            selector.style.display = (selector.style.display == 'none') ? 'block' : 'none';
         }
     })
-
-    canvas.addEventListener("mouseup", () => {
-        down = false;
-    })
 }
 
-onDrag(gradient, e => {
-    let color = hslToRgb(currentHue, e.offsetX, (100 - e.offsetY) / 2);
-    console.log(color, e.xOffset);
-    colorValueDisplay.textContent = rgbToHex(color.r, color.g, color.b);
-    preview.style.backgroundColor = colorValueDisplay.textContent;
+const commonSansSerif = [
+    "Arial",
+    "Verdana",
+    "Tahoma",
+    "Helvetica",
+    "Franklin Gothic",
+    "Calibri",
+    "Open Sans",
+];
 
-    let ctx = gradient.getContext("2d");
-    ctx.clearRect(0, 0, gradient.width, gradient.height);
-    createGradient(currentHue);
-    ctx.fillStyle = "rgb(0,0,0)";
-    ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
-    ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
-})
+const commonSerif = [
+    "Times New Roman",
+    "Georgia",
+    "Garamond",
+    "Palatino",
+    "Serif",
+    "Merriweather",
+    "Playfair Display",
+];
 
-onDrag(hueSelect, e => {
-    let newHue = (e.offsetX / 100) * 360;
-    currentHue = newHue;
-    // Display line showing where the hue is
-    createGradient(newHue);
-    createHueRange(hueSelect, (newHue / 360) * hueSelect.width);
-    // console.log(newHue);
-})
+const commonMonospace = [
+    "Courier New",
+    "Lucida Console",
+    "Monaco",
+    "Consolas",
+    "Fira Mono",
+];
 
-color.addEventListener("click", (e) => {
+function refreshFonts() {
+    fontSelect.innerHTML = "";
+    for (let font of commonSansSerif) {
+        let p = document.createElement("p");
+        p.innerHTML = `${font} | <i>Sans Serif</i>`;
+        p.style.fontFamily = font;
+        p.classList.add("font");
+        fontSelect.appendChild(p);
+    }
+    for (let font of commonSerif) {
+        let p = document.createElement("p");
+        p.innerHTML = `${font} | <i>Serif</i>`;
+        p.style.fontFamily = font;
+        p.classList.add("font");
+        fontSelect.appendChild(p);
+    }
+    for (let font of commonMonospace) {
+        let p = document.createElement("p");
+        p.innerHTML = `${font} | <i>Monospace</i>`;
+        p.style.fontFamily = font;
+        p.classList.add("font");
+        fontSelect.appendChild(p);
+    }
+}
+
+font.addEventListener("click", (e) => {
     console.log(e);
-    if (e.srcElement.id == "package" || e.srcElement.id == "color" || e.srcElement.id == "colorValue" || e.srcElement.id == "preview") {
-        selector.style.display = (selector.style.display == 'none') ? 'block' : 'none';
+    // Set the current font
+    if (e.srcElement.id == "current") {
+        fontSelect.style.display = (fontSelect.style.display == 'none') ? 'block' : 'none';
     }
 })
+
+refreshFonts();

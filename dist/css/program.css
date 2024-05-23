@@ -319,20 +319,6 @@ body {
     /* align-items: center; */
 }
 
-#toolbar>p {
-    background-color: var(--interaction);
-    margin: 0;
-    padding: 0;
-    width: fit-content;
-    padding-left: 5px;
-    padding-right: 5px;
-    font-size: 14px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    color: var(--text);
-    margin-left: 5px;
-}
-
 #toolbar>#color {
     background-color: var(--interaction);
     margin: 0;
@@ -387,9 +373,96 @@ body {
     width: 100px;
 }
 
+#toolbar>p {
+    background-color: var(--interaction);
+    margin: 0;
+    padding: 0;
+    width: fit-content;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 14px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    color: var(--text);
+    margin-left: 5px;
+}
+
 #toolbar>p:hover {
     background-color: var(--active);
     color: var(--text-hover);
+    cursor: pointer;
+}
+
+#toolbar>#font {
+    background-color: var(--interaction);
+    margin: 0;
+    padding: 0;
+    /* padding-left: 5px;
+    padding-right: 5px; */
+    font-size: 14px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    color: var(--text);
+    margin-left: 5px;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+}
+
+#toolbar>#font>#current {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    z-index: 2;
+    position: relative;
+    background-color: var(--interaction);
+    height: 30px;
+    width: 100%;
+    /* margin-top: auto; */
+    /* margin-bottom: auto; */
+}
+
+#select {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    background-color: var(--sub-menu);
+    /* padding: 5px; */
+    position: relative;
+    z-index: 1;
+    top: 7px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    height: 100%;
+}
+
+#select::-webkit-scrollbar {
+    width: 2px;
+    /* Width of the scrollbar track */
+}
+
+#select::-webkit-scrollbar-thumb {
+    background-color: var(--menu);
+}
+
+#select::-webkit-scrollbar-track {
+    background: var(--sub-menu);
+    /* Color of the scrollbar track */
+}
+
+.font {
+    background-color: var(--menu);
+    width: 100%;
+    height: fit-content;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 14px;
+    margin: 0;
+}
+
+.font:hover {
+    background-color: var(--sub-menu);
     cursor: pointer;
 }
 
