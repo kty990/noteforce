@@ -14,6 +14,7 @@ let linkCount = 0;
 
 let currentHue = 0;
 let activeFont = "Arial";
+let currentSelectionRange = { start: -1, end: -1, text: "" }; // -1 = not selected
 
 const new_notepad = document.getElementById("new-notepad");
 const new_notepad_file = document.getElementById("new-notepad-file");
@@ -35,6 +36,41 @@ const font = document.getElementById("font");
 const currentFont = font.querySelector("#current");
 const fontSelect = font.querySelector("#select");
 
+const commonSansSerif = [
+    "Arial",
+    "Verdana",
+    "Tahoma",
+    "Helvetica",
+    "Franklin Gothic",
+    "Calibri",
+    "Open Sans",
+];
+
+const commonSerif = [
+    "Times New Roman",
+    "Georgia",
+    "Garamond",
+    "Palatino",
+    "Serif",
+    "Merriweather",
+    "Playfair Display",
+];
+
+const commonMonospace = [
+    "Courier New",
+    "Lucida Console",
+    "Monaco",
+    "Consolas",
+    "Fira Mono",
+];
+
+const debugZone = document.getElementById("debug-zone");
+
+const sDebug = debugZone.querySelector("#start");
+const eDebug = debugZone.querySelector("#end");
+const tDebug = debugZone.querySelector("#text");
+const lastModification = debugZone.querySelector("#last");
+
 {
     function newNotepad(name) {
         let e = document.createElement("p");
@@ -48,11 +84,8 @@ const fontSelect = font.querySelector("#select");
         sideTemplate.addEventListener("click", () => {
             try {
                 selectedNotepad.element.style.backgroundColor = null;
-            } catch (e) { console.log(e) }
-            selectedNotepad.element = sideTemplate;
-            selectedNotepad.name = sideTemplate.textContent;
-            selectedNotepad.element.style.backgroundColor = 'var(--interaction)'
-            window.api.send("notepadSelected", selectedNotepad.name);
+            } catch (e) { }
+            window.api.send("notepadSelected", sideTemplate.textContent);
         })
     }
 
@@ -261,8 +294,19 @@ const fontSelect = font.querySelector("#select");
         // return `<a href="${url}" class='link'>${url}</a>` // might need to change method
     }
 
-    window.api.on("load_html", html => { // Not implemented on server side
+    window.api.on("load_html", html => {
         textarea.innerHTML = html;
+    })
+
+    window.api.on("set_active", name => {
+        let children = notepads.children;
+        for (let child of children) {
+            if (child.textContent == name) {
+                selectedNotepad.element = child;
+                selectedNotepad.name = name;
+                child.style.backgroundColor = 'var(--active)'
+            }
+        }
     })
 
     window.api.on("AddToSideMenu", name => {
@@ -465,6 +509,7 @@ const fontSelect = font.querySelector("#select");
         ctx.fillStyle = "rgb(0,0,0)";
         ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
         ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
+        applyStyle("color", colorValueDisplay.textContent); // Does NOT work
     })
 
     onDrag(hueSelect, e => {
@@ -484,41 +529,20 @@ const fontSelect = font.querySelector("#select");
     })
 }
 
-const commonSansSerif = [
-    "Arial",
-    "Verdana",
-    "Tahoma",
-    "Helvetica",
-    "Franklin Gothic",
-    "Calibri",
-    "Open Sans",
-];
-
-const commonSerif = [
-    "Times New Roman",
-    "Georgia",
-    "Garamond",
-    "Palatino",
-    "Serif",
-    "Merriweather",
-    "Playfair Display",
-];
-
-const commonMonospace = [
-    "Courier New",
-    "Lucida Console",
-    "Monaco",
-    "Consolas",
-    "Fira Mono",
-];
-
 function refreshFonts() {
     fontSelect.innerHTML = "";
+    const activateFont = p => {
+        p.addEventListener("click", () => {
+            currentFont.innerHTML = p.innerHTML;
+            // If text is selected, apply font to selected text
+        })
+    }
     for (let font of commonSansSerif) {
         let p = document.createElement("p");
         p.innerHTML = `${font} | <i>Sans Serif</i>`;
         p.style.fontFamily = font;
         p.classList.add("font");
+        activateFont(p);
         fontSelect.appendChild(p);
     }
     for (let font of commonSerif) {
@@ -526,6 +550,7 @@ function refreshFonts() {
         p.innerHTML = `${font} | <i>Serif</i>`;
         p.style.fontFamily = font;
         p.classList.add("font");
+        activateFont(p);
         fontSelect.appendChild(p);
     }
     for (let font of commonMonospace) {
@@ -533,6 +558,7 @@ function refreshFonts() {
         p.innerHTML = `${font} | <i>Monospace</i>`;
         p.style.fontFamily = font;
         p.classList.add("font");
+        activateFont(p);
         fontSelect.appendChild(p);
     }
 }
@@ -540,9 +566,82 @@ function refreshFonts() {
 font.addEventListener("click", (e) => {
     console.log(e);
     // Set the current font
-    if (e.srcElement.id == "current") {
+    if (e.srcElement.id == "current" || e.srcElement.id == "font") {
         fontSelect.style.display = (fontSelect.style.display == 'none') ? 'block' : 'none';
     }
 })
 
 refreshFonts();
+
+/** Selection handling */
+{
+    textarea.parentElement.addEventListener("keydown", function (event) {
+        if (event.target === textarea) {
+            // Selection might have changed, access it using window.getSelection()
+            const selection = window.getSelection();
+            currentSelectionRange.text = selection.toString();
+            currentSelectionRange.start = selection.anchorOffset;
+            currentSelectionRange.end = selection.focusOffset;
+            sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
+            eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
+            tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
+        }
+    });
+
+    textarea.parentElement.addEventListener("mouseup", function (event) {
+        if (event.target === textarea) {
+            // Selection might have changed, access it using window.getSelection()
+            const selection = window.getSelection();
+            currentSelectionRange.text = selection.toString();
+            currentSelectionRange.start = selection.anchorOffset;
+            currentSelectionRange.end = selection.focusOffset;
+            sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
+            eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
+            tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
+        }
+    });
+}
+
+function lastModificationUpdate(str) {
+    lastModification.textContent = `Last Modification: ${str}`;
+}
+
+function applyStyle(type = "", value = "") {
+    // Uses currentSelectionRange values
+    const { start, end, text } = currentSelectionRange;
+    let difference = end - start;
+    let htmlIndex = textarea.innerHTML.indexOf(text, start - 1);
+    let found = true;
+    let modified = false;
+    let currentIndex = htmlIndex;
+    while (found && currentIndex < htmlIndex + difference) {
+        let testIndex = textarea.innerHTML.indexOf("<span", currentIndex - 50);
+        if (testIndex != -1 && testIndex >= htmlIndex && testIndex < htmlIndex + difference) {
+            let spanStart = textarea.innerHTML.indexOf("<span", currentIndex);
+            let spanEnd = textarea.innerHTML.indexOf(">", currentIndex);
+            if (!(spanStart < htmlIndex + difference && spanEnd < htmlIndex + difference)) {
+                alert("break");
+                break;
+            }
+            currentIndex = spanEnd;
+            let span = textarea.innerHTML.substring(spanStart, spanEnd);
+            let attrs = span.split(";");
+            let i = 0;
+            modified = true;
+            for (let attr of attrs) {
+                if (attr.includes(type)) {
+                    let spl = attr.split(":");
+                    spl[1] = value;
+                    attrs[i] = spl;
+                }
+            }
+            lastModificationUpdate(textarea.innerHTML.substring(0, spanStart) + attrs.join(";") + textarea.innerHTML.substring(spanEnd));
+        } else {
+            found = false;
+        }
+    }
+    if (!modified) {
+        textarea.innerHTML = textarea.innerHTML.substring(0, htmlIndex) + `<span style="${type}:${value};">` + textarea.innerHTML.substring(htmlIndex, htmlIndex + difference) + "</span>" + textarea.innerHTML.substring(htmlIndex + difference);
+        lastModificationUpdate(textarea.innerHTML.substring(0, htmlIndex) + `<span style="${type}:${value};"` + textarea.innerHTML.substring(htmlIndex, htmlIndex + difference) + textarea.innerHTML.substring(htmlIndex + difference));
+    }
+}

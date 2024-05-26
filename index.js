@@ -20,8 +20,12 @@ class GraphicsWindow {
                 setTimeout(() => {
                     for (let notepad of notepads.notes) {
                         this.window.webContents.send("AddToSideMenu", notepad.name);
+                        if (notepad.isCurrentlySelected) {
+                            graphicsWindow.window.webContents.send("load_html", notepad.html);
+                            graphicsWindow.window.webContents.send("set_active", notepad.name);
+                        }
                     }
-                }, 1000);
+                }, 250);
             });
         } catch (e) {
             const { Notification } = require('electron')
@@ -165,11 +169,12 @@ function getTimestamp() {
             let x = notepads.notes[i];
             if (x.name == data[0]) {
                 notepads.notes[i].isCurrentlySelected = true;
-                graphicsWindow.window.webContents.send("load_html", notepads.notes[i].html)
-                console.log(`Selected new notepad: ${x}`);
+                graphicsWindow.window.webContents.send("load_html", x.html);
+                graphicsWindow.window.webContents.send("set_active", x.name);
             } else {
                 notepads.notes[i].isCurrentlySelected = false;
             }
         }
+        save();
     })
 }

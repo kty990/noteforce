@@ -507,3 +507,24 @@ body {
     overflow-y: visible;
     word-wrap: break-word;
 }
+
+#debug-zone {
+    position: fixed;
+    left: 10px;
+    bottom: 20px;
+    z-index: 997098379283;
+    background-color: var(--menu);
+    border-color: var(--border);
+    border-radius: 20px;
+    border-style: solid;
+    color: var(--text);
+    padding: 15px;
+    width: 500px;
+    height: 100px;
+    overflow-y: auto;
+}
+
+#debug-zone>p {
+    margin: 0;
+    padding: 0;
+}
