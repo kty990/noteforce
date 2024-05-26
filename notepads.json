@@ -5,7 +5,7 @@
       "plainText": "This is test, a test notepad used for development testing",
       "html": "This is test, a test notepad used for development testing",
       "lastUpdated": 1715527942180,
-      "isCurrentlySelected": true
+      "isCurrentlySelected": false
     },
     {
       "name": "test2",
@@ -13,6 +13,13 @@
       "html": "this is a test of test2<div>asdfasdfasdfasdfasdasd</div><div><br></div><a href=\"https://www.google.com\" id=\"1\" class=\"link\" contenteditable=\"false\">Google</a>",
       "lastUpdated": 1715491365783,
       "isCurrentlySelected": false
+    },
+    {
+      "name": "preview",
+      "plainText": "",
+      "html": "",
+      "lastUpdated": 1716690869009,
+      "isCurrentlySelected": true
     }
   ]
 }
