@@ -574,74 +574,79 @@ font.addEventListener("click", (e) => {
 refreshFonts();
 
 /** Selection handling */
-{
-    textarea.parentElement.addEventListener("keydown", function (event) {
-        if (event.target === textarea) {
-            // Selection might have changed, access it using window.getSelection()
-            const selection = window.getSelection();
-            currentSelectionRange.text = selection.toString();
-            currentSelectionRange.start = selection.anchorOffset;
-            currentSelectionRange.end = selection.focusOffset;
-            sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
-            eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
-            tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
-        }
-    });
+textarea.parentElement.addEventListener("mousedown", function (event) {
+    if (event.target === textarea || textarea.contains(event.target)) {
+        // Selection might have changed, access it using window.getSelection()
+        const selection = window.getSelection();
+        currentSelectionRange.text = selection.toString();
+        currentSelectionRange.start = selection.anchorOffset;
+        currentSelectionRange.end = selection.focusOffset;
+        sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
+        eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
+        tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
+    }
+});
 
-    textarea.parentElement.addEventListener("mouseup", function (event) {
-        if (event.target === textarea) {
-            // Selection might have changed, access it using window.getSelection()
-            const selection = window.getSelection();
-            currentSelectionRange.text = selection.toString();
-            currentSelectionRange.start = selection.anchorOffset;
-            currentSelectionRange.end = selection.focusOffset;
-            sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
-            eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
-            tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
-        }
-    });
-}
-
+textarea.parentElement.addEventListener("mouseup", function (event) {
+    if (event.target === textarea || textarea.contains(event.target)) {
+        // Selection might have changed, access it using window.getSelection()
+        const selection = window.getSelection();
+        currentSelectionRange.text = selection.toString();
+        currentSelectionRange.start = selection.anchorOffset;
+        currentSelectionRange.end = selection.focusOffset;
+        sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
+        eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
+        tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
+    }
+});
 function lastModificationUpdate(str) {
     lastModification.textContent = `Last Modification: ${str}`;
 }
 
-function applyStyle(type = "", value = "") {
-    // Uses currentSelectionRange values
+function split_by_two_delimiters(text, delim1, delim2) {
+    /*
+    Splits a string by two delimiters and returns a list of resulting parts.
+
+    Args:
+    text: The string to split.
+        delim1: The first delimiter.
+            delim2: The second delimiter.
+
+                Returns:
+      A list of the resulting parts after splitting by both delimiters.
+    */
+
+    const parts = text.split(delim1);
+    const result = [];
+    for (const part of parts) {
+        result.push(...part.split(delim2));
+    }
+    return result;
+}
+
+function applyStyle(type, value) {
+    // console.log(split_by_two_delimiters(textarea.innerHTML, "<", ">"));
     const { start, end, text } = currentSelectionRange;
     let difference = end - start;
-    let htmlIndex = textarea.innerHTML.indexOf(text, start - 1);
-    let found = true;
     let modified = false;
-    let currentIndex = htmlIndex;
-    while (found && currentIndex < htmlIndex + difference) {
-        let testIndex = textarea.innerHTML.indexOf("<span", currentIndex - 50);
-        if (testIndex != -1 && testIndex >= htmlIndex && testIndex < htmlIndex + difference) {
-            let spanStart = textarea.innerHTML.indexOf("<span", currentIndex);
-            let spanEnd = textarea.innerHTML.indexOf(">", currentIndex);
-            if (!(spanStart < htmlIndex + difference && spanEnd < htmlIndex + difference)) {
-                alert("break");
-                break;
-            }
-            currentIndex = spanEnd;
-            let span = textarea.innerHTML.substring(spanStart, spanEnd);
-            let attrs = span.split(";");
-            let i = 0;
+    let htmlIndex = textarea.innerHTML.indexOf(text, start - 1);
+
+    const partiallyIncludes = (a, b) => {
+        return b.includes(a.substring(0, b.length)) || a.includes(b.substring(0, a.length));
+    }
+    let spanTags = Array.from(textarea.querySelectorAll("span"));
+    for (let tag of spanTags) {
+        if (partiallyIncludes(tag.textContent, text)) {
+            tag.style[type] = value;
             modified = true;
-            for (let attr of attrs) {
-                if (attr.includes(type)) {
-                    let spl = attr.split(":");
-                    spl[1] = value;
-                    attrs[i] = spl;
-                }
-            }
-            lastModificationUpdate(textarea.innerHTML.substring(0, spanStart) + attrs.join(";") + textarea.innerHTML.substring(spanEnd));
-        } else {
-            found = false;
+            break;
         }
     }
     if (!modified) {
+        // Create a new span with the style
         textarea.innerHTML = textarea.innerHTML.substring(0, htmlIndex) + `<span style="${type}:${value};">` + textarea.innerHTML.substring(htmlIndex, htmlIndex + difference) + "</span>" + textarea.innerHTML.substring(htmlIndex + difference);
-        lastModificationUpdate(textarea.innerHTML.substring(0, htmlIndex) + `<span style="${type}:${value};"` + textarea.innerHTML.substring(htmlIndex, htmlIndex + difference) + textarea.innerHTML.substring(htmlIndex + difference));
     }
 }
+
+const testText = "this,is.a,sepa.sdfh.adsf,this"
+console.log(split_by_two_delimiters(testText, ",", '.'));

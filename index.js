@@ -25,7 +25,7 @@ class GraphicsWindow {
                             graphicsWindow.window.webContents.send("set_active", notepad.name);
                         }
                     }
-                }, 250);
+                }, 500);
             });
         } catch (e) {
             const { Notification } = require('electron')

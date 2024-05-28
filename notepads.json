@@ -2,23 +2,9 @@
   "notes": [
     {
       "name": "test",
-      "plainText": "This is test, a test notepad used for development testing",
-      "html": "This is test, a test notepad used for development testing",
-      "lastUpdated": 1715527942180,
-      "isCurrentlySelected": false
-    },
-    {
-      "name": "test2",
-      "plainText": "this is a test of test2asdfasdfasdfasdfasdasdGoogle",
-      "html": "this is a test of test2<div>asdfasdfasdfasdfasdasd</div><div><br></div><a href=\"https://www.google.com\" id=\"1\" class=\"link\" contenteditable=\"false\">Google</a>",
-      "lastUpdated": 1715491365783,
-      "isCurrentlySelected": false
-    },
-    {
-      "name": "preview",
-      "plainText": "",
-      "html": "",
-      "lastUpdated": 1716690869009,
+      "plainText": "this is the first test function after a complete refreshGoogle",
+      "html": "this is the f<span style=\"color: rgb(19, 205, 194);\">irst test </span>function after <span style=\"color: rgb(33, 183, 9);\">a com</span>plete refresh<div><br></div><div><br></div><a href=\"https://www.google.com/\" id=\"1\" class=\"link\" contenteditable=\"false\">Google</a>",
+      "lastUpdated": 1716863696309,
       "isCurrentlySelected": true
     }
   ]
