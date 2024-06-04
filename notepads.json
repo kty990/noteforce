@@ -5,7 +5,21 @@
       "plainText": "this is the first test function after a complete refreshGoogle",
       "html": "this is the f<span style=\"color: rgb(19, 205, 194);\">irst test </span>function after <span style=\"color: rgb(33, 183, 9);\">a com</span>plete refresh<div><br></div><div><br></div><a href=\"https://www.google.com/\" id=\"1\" class=\"link\" contenteditable=\"false\">Google</a>",
       "lastUpdated": 1716863696309,
+      "isCurrentlySelected": false
+    },
+    {
+      "name": "test2",
+      "plainText": "this is the first test&nbsp;function after&nbsp;a complete refreshkutcher.ca",
+      "html": "this is the f<span style=\"color: rgb(19, 205, 194); font-size: 20px;\">irst test&nbsp;</span>function after&nbsp;<span style=\"color: rgb(23, 176, 93);\">a com</span>plete refresh<div><br></div><div><br></div><a href=\"https://www.kutcher.ca/content/pages/flying.htm\" id=\"1\" class=\"link\" contenteditable=\"false\">kutcher.ca</a>",
+      "lastUpdated": 1717454865416,
       "isCurrentlySelected": true
+    },
+    {
+      "name": "ken",
+      "plainText": "this is a new notepad&nbsp;",
+      "html": "this is a new notepad&nbsp;",
+      "lastUpdated": 1717094528667,
+      "isCurrentlySelected": false
     }
   ]
 }

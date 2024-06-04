@@ -478,6 +478,7 @@ const lastModification = debugZone.querySelector("#last");
         ctx.fillStyle = "rgb(0,0,0)";
         ctx.fillRect(0, e.offsetY - 0.5, 100, 1);
         ctx.fillRect(e.offsetX - 0.5, 0, 1, 100);
+        applyStyle("color", colorValueDisplay.textContent);
     })
 
     function onDrag(canvas, callback) {
@@ -573,14 +574,32 @@ font.addEventListener("click", (e) => {
 
 refreshFonts();
 
+/**
+ * 
+ * @param {HTMLElement} parent 
+ * @param {Node} node 
+ * 
+ * @returns {number} Returns -1 if not found
+ */
+function getNodeIndex(parent, node) {
+    let nodes = Array.from(parent.childNodes);
+    for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].isSameNode(node)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 /** Selection handling */
 textarea.parentElement.addEventListener("mousedown", function (event) {
     if (event.target === textarea || textarea.contains(event.target)) {
         // Selection might have changed, access it using window.getSelection()
         const selection = window.getSelection();
-        currentSelectionRange.text = selection.toString();
-        currentSelectionRange.start = selection.anchorOffset;
-        currentSelectionRange.end = selection.focusOffset;
+        let t0 = getNodeIndex(textarea, selection.anchorNode);
+        let t1 = getNodeIndex(textarea, selection.focusNode);
+        currentSelectionRange.start = (t0 < t1) ? t0 : t1;
+        currentSelectionRange.end = (t0 >= t1) ? t0 : t1;
         sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
         eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
         tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
@@ -591,9 +610,18 @@ textarea.parentElement.addEventListener("mouseup", function (event) {
     if (event.target === textarea || textarea.contains(event.target)) {
         // Selection might have changed, access it using window.getSelection()
         const selection = window.getSelection();
-        currentSelectionRange.text = selection.toString();
-        currentSelectionRange.start = selection.anchorOffset;
-        currentSelectionRange.end = selection.focusOffset;
+
+        currentSelectionRange.text = Array.from(selection.getRangeAt(0).cloneContents().childNodes).map(obj => {
+            if (obj.nodeName != "#text") {
+                return obj.outerHTML;
+            }
+            return obj.textContent;
+        }).join("");
+        let t0 = getNodeIndex(textarea, selection.anchorNode);
+        let t1 = getNodeIndex(textarea, selection.focusNode);
+        currentSelectionRange.start = (t0 < t1) ? t0 : t1;
+        currentSelectionRange.end = (t0 >= t1) ? t0 : t1;
+        console.log(currentSelectionRange.start, currentSelectionRange.end);
         sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
         eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
         tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
@@ -624,29 +652,169 @@ function split_by_two_delimiters(text, delim1, delim2) {
     return result;
 }
 
-function applyStyle(type, value) {
-    // console.log(split_by_two_delimiters(textarea.innerHTML, "<", ">"));
-    const { start, end, text } = currentSelectionRange;
-    let difference = end - start;
-    let modified = false;
-    let htmlIndex = textarea.innerHTML.indexOf(text, start - 1);
+// function applyStyle(type, value) {
+//     // console.log(split_by_two_delimiters(textarea.innerHTML, "<", ">"));
+//     let { start, end, text } = currentSelectionRange;
+//     let nodes = Array.from(textarea.childNodes);
+//     console.log(nodes);
 
-    const partiallyIncludes = (a, b) => {
-        return b.includes(a.substring(0, b.length)) || a.includes(b.substring(0, a.length));
-    }
-    let spanTags = Array.from(textarea.querySelectorAll("span"));
-    for (let tag of spanTags) {
-        if (partiallyIncludes(tag.textContent, text)) {
-            tag.style[type] = value;
-            modified = true;
-            break;
-        }
-    }
-    if (!modified) {
-        // Create a new span with the style
-        textarea.innerHTML = textarea.innerHTML.substring(0, htmlIndex) + `<span style="${type}:${value};">` + textarea.innerHTML.substring(htmlIndex, htmlIndex + difference) + "</span>" + textarea.innerHTML.substring(htmlIndex + difference);
-    }
+//     function partiallyIncludes(mainString, searchString) {
+//         // Split the search string into individual words
+//         let words = searchString.split(' ');
+//         let containedWords = [];
+
+//         // Iterate through each word to see if it is contained within the main string
+//         for (let word of words) {
+//             if (mainString.includes(word)) {
+//                 let index = mainString.indexOf(word);
+//                 containedWords.push(mainString.substring(index, word.length));
+//             }
+//         }
+
+//         console.warn(mainString.replace("\n", "NEWLINE"), searchString.replace("\n", "NEWLINE"));
+//         console.log(containedWords);
+//         // Return the array of contained words, or null if no words are found
+//         return { success: containedWords.length > 0, result: containedWords.join(" ") }
+//     }
+
+//     for (let i = start; i < end; i++) {
+//         console.log(i);
+//         if (nodes[i].nodeName == "span") {
+//             let element = nodes[i];
+//             if (element.style[type] != null && element.style[type] != undefined) {
+//                 if (i > start && i < end) {
+//                     nodes[i].style[type] = value;
+//                 } else {
+//                     let pI = partiallyIncludes(text, nodes[i].textContent);
+//                     if (!pI.success) {
+//                         console.log(nodes[i].textContent, 'failed');
+//                         console.error(text);
+//                         continue;
+//                     }
+//                     console.log(pI);
+//                     if (i == start) {
+//                         nodes[i].textContent = nodes[i].textContent.replace(pI.result, `<span style="${type}:${value};">${pI.result}`);
+//                     } else if (i == end) {
+//                         nodes[i].textContent = nodes[i].textContent.replace(pI.result, `${pI.result}</span>`);
+//                     }
+//                 }
+//             }
+//         } else {
+//             let pI = partiallyIncludes(text, nodes[i].textContent);
+//             console.log(pI);
+//             if (!pI.success) {
+//                 console.log(nodes[i].textContent, 'failed');
+//                 console.error(text);
+//                 continue;
+//             }
+//             if (i > start && i < end) {
+//                 nodes[i] = document.createElement("span");
+//                 nodes[i].textContent = pI.result;
+//                 nodes[i].style[type] = value;
+//                 console.log("Setting mid span value", type, value);
+//             } else {
+//                 if (i == start) {
+//                     nodes[i].textContent.replace(pI.result, `<span style="${type}:${value};">${pI.result}`);
+//                 } else if (i == end) {
+//                     nodes[i].textContent.replace(pI.result, `${pI.result}</span>`);
+//                 }
+//             }
+//         }
+//     }
+
+//     if (start == end) {
+//         let pI = partiallyIncludes(text, nodes[start].textContent);
+//         console.log(pI);
+//         if (pI.success) {
+//             nodes[start].textContent = nodes[start].textContent.replace(pI.result, `<span style="${type}:${value};">${pI.result}</span>`);
+//         }
+//     }
+
+//     let result = nodes.map(n => {
+//         console.warn(`NODE NAME: ${n.nodeName}`);
+//         if (n.nodeName.toLowerCase() == '#text') {
+//             console.warn("Returning #text", n);
+//             return n.textContent;
+//         } else {
+//             console.warn("Returning span", n.textContent);
+//             return n.outerHTML;
+//         }
+//     });
+//     console.log(`Result: ${result}`);
+//     textarea.innerHTML = result.join("");
+// }
+
+function hexToRgb(hex) {
+    // Remove '#' if present
+    hex = hex.replace(/^#?([A-Fa-f\d])([A-Fa-f\d])([A-Fa-f\d])$/i, '$1$2$3');
+
+    // Convert the string to an array of hex values (2 characters each)
+    const rgb = hex.match(/[A-Fa-f\d]{2}/g).map(value => parseInt(value, 16));
+
+    // Return RGB values (in the range of 0-255)
+    return rgb.length === 3 ? rgb : null;
 }
 
-const testText = "this,is.a,sepa.sdfh.adsf,this"
-console.log(split_by_two_delimiters(testText, ",", '.'));
+
+function applyStyle(type, value) {
+    const { start, end, text } = currentSelectionRange;
+    let list = split_by_two_delimiters(text, "<", ">");
+    let tmp = [];
+    for (let l of list) {
+        tmp.push(l);
+    }
+    console.log(list);
+    let deleteSpan = false;
+    for (let i = 0; i < tmp.length; i++) {
+        if (tmp[i].indexOf('span style=') != -1) {
+            console.warn(1);
+            if (tmp[i].indexOf(`${type}: `) != -1) {
+                console.warn(2);
+                const pattern = new RegExp(`${type}: (.*?);`, "g");
+                tmp[i] = tmp[i].replace(pattern, '');
+                if (!new RegExp(`(.*?): (.*?);`).test(tmp[i])) {
+                    console.warn(3);
+                    // The span tag is empty 
+                    tmp[i] = null;
+                    deleteSpan = true;
+                } else {
+                    tmp[i] = `<${tmp[i]}>`
+                }
+            } else {
+                console.log("Couldn't delete...", tmp[i], `${type}: ${(type == 'color' ? hexToRgb(value) : value)};`);
+            }
+        } else if (tmp[i].indexOf("/span") != -1) {
+            if (deleteSpan) {
+                console.log(4);
+                tmp[i] = null;
+                console.log(tmp);
+                deleteSpan = false;
+            } else {
+                tmp[i] = `<${tmp[i]}>`
+            }
+        }
+    }
+    let content = tmp.map(e => {
+        if (e === null && e != "&nbsp") {
+            return '';
+        } else {
+            return e;
+        }
+    }).join('');
+
+
+    content = `<span style="${type}: ${value};">${content}</span>`;
+    textarea.innerHTML = textarea.innerHTML.replace(text.replace("\u00A0", "&nbsp;"), content);
+
+    // let db1 = text.replace(" ", "#");
+    // while (db1.indexOf(" ") != -1) {
+    //     db1 = db1.replace(" ", "#");
+    //     db1 = db1.replace("\u00A0", "&nbsp;")
+    // }
+    // let db2 = textarea.innerHTML.replace(" ", "#");
+    // while (db2.indexOf(" ") != -1) {
+    //     db2 = db2.replace(" ", "#");
+    //     db2 = db2.replace("\u00A0", "&nbsp;")
+    // }
+    // console.log(db1, "\n\n", db2);
+}
