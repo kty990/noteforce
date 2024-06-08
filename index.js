@@ -17,15 +17,6 @@ class GraphicsWindow {
 
             app.on('ready', async () => {
                 await this.createWindow();
-                setTimeout(() => {
-                    for (let notepad of notepads.notes) {
-                        this.window.webContents.send("AddToSideMenu", notepad.name);
-                        if (notepad.isCurrentlySelected) {
-                            graphicsWindow.window.webContents.send("load_html", notepad.html);
-                            graphicsWindow.window.webContents.send("set_active", notepad.name);
-                        }
-                    }
-                }, 500);
             });
         } catch (e) {
             const { Notification } = require('electron')
@@ -63,7 +54,7 @@ class GraphicsWindow {
 
         this.window.setMenu(menu);
 
-        this.window.loadFile('./dist/html/home.html');
+        this.window.loadFile('./dist/html/loading.html');
 
         this.window.on('closed', () => {
             this.window = null;
@@ -176,5 +167,18 @@ function getTimestamp() {
             }
         }
         save();
+    })
+
+    ipcMain.on("loaded", async () => {
+        await graphicsWindow.window.loadFile('./dist/html/home.html');
+        setTimeout(() => {
+            for (let notepad of notepads.notes) {
+                graphicsWindow.window.webContents.send("AddToSideMenu", notepad.name);
+                if (notepad.isCurrentlySelected) {
+                    graphicsWindow.window.webContents.send("load_html", notepad.html);
+                    graphicsWindow.window.webContents.send("set_active", notepad.name);
+                }
+            }
+        }, 500);
     })
 }

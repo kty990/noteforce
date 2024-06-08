@@ -459,7 +459,6 @@ const lastModification = debugZone.querySelector("#last");
         // Display line showing where the hue is
         createGradient(newHue);
         createHueRange(hueSelect, (newHue / 360) * hueSelect.width);
-        console.log(newHue);
     })
 
     gradient.addEventListener("click", e => {
@@ -523,7 +522,6 @@ const lastModification = debugZone.querySelector("#last");
     })
 
     color.addEventListener("click", (e) => {
-        console.log(e);
         if (e.srcElement.id == "package" || e.srcElement.id == "color" || e.srcElement.id == "colorValue" || e.srcElement.id == "preview") {
             selector.style.display = (selector.style.display == 'none') ? 'block' : 'none';
         }
@@ -621,7 +619,6 @@ textarea.parentElement.addEventListener("mouseup", function (event) {
         let t1 = getNodeIndex(textarea, selection.focusNode);
         currentSelectionRange.start = (t0 < t1) ? t0 : t1;
         currentSelectionRange.end = (t0 >= t1) ? t0 : t1;
-        console.log(currentSelectionRange.start, currentSelectionRange.end);
         sDebug.textContent = `Selected Start: ${currentSelectionRange.start}`;
         eDebug.textContent = `Selected End: ${currentSelectionRange.end}`;
         tDebug.textContent = `Selected Text: ${currentSelectionRange.text}`;
@@ -652,98 +649,6 @@ function split_by_two_delimiters(text, delim1, delim2) {
     return result;
 }
 
-// function applyStyle(type, value) {
-//     // console.log(split_by_two_delimiters(textarea.innerHTML, "<", ">"));
-//     let { start, end, text } = currentSelectionRange;
-//     let nodes = Array.from(textarea.childNodes);
-//     console.log(nodes);
-
-//     function partiallyIncludes(mainString, searchString) {
-//         // Split the search string into individual words
-//         let words = searchString.split(' ');
-//         let containedWords = [];
-
-//         // Iterate through each word to see if it is contained within the main string
-//         for (let word of words) {
-//             if (mainString.includes(word)) {
-//                 let index = mainString.indexOf(word);
-//                 containedWords.push(mainString.substring(index, word.length));
-//             }
-//         }
-
-//         console.warn(mainString.replace("\n", "NEWLINE"), searchString.replace("\n", "NEWLINE"));
-//         console.log(containedWords);
-//         // Return the array of contained words, or null if no words are found
-//         return { success: containedWords.length > 0, result: containedWords.join(" ") }
-//     }
-
-//     for (let i = start; i < end; i++) {
-//         console.log(i);
-//         if (nodes[i].nodeName == "span") {
-//             let element = nodes[i];
-//             if (element.style[type] != null && element.style[type] != undefined) {
-//                 if (i > start && i < end) {
-//                     nodes[i].style[type] = value;
-//                 } else {
-//                     let pI = partiallyIncludes(text, nodes[i].textContent);
-//                     if (!pI.success) {
-//                         console.log(nodes[i].textContent, 'failed');
-//                         console.error(text);
-//                         continue;
-//                     }
-//                     console.log(pI);
-//                     if (i == start) {
-//                         nodes[i].textContent = nodes[i].textContent.replace(pI.result, `<span style="${type}:${value};">${pI.result}`);
-//                     } else if (i == end) {
-//                         nodes[i].textContent = nodes[i].textContent.replace(pI.result, `${pI.result}</span>`);
-//                     }
-//                 }
-//             }
-//         } else {
-//             let pI = partiallyIncludes(text, nodes[i].textContent);
-//             console.log(pI);
-//             if (!pI.success) {
-//                 console.log(nodes[i].textContent, 'failed');
-//                 console.error(text);
-//                 continue;
-//             }
-//             if (i > start && i < end) {
-//                 nodes[i] = document.createElement("span");
-//                 nodes[i].textContent = pI.result;
-//                 nodes[i].style[type] = value;
-//                 console.log("Setting mid span value", type, value);
-//             } else {
-//                 if (i == start) {
-//                     nodes[i].textContent.replace(pI.result, `<span style="${type}:${value};">${pI.result}`);
-//                 } else if (i == end) {
-//                     nodes[i].textContent.replace(pI.result, `${pI.result}</span>`);
-//                 }
-//             }
-//         }
-//     }
-
-//     if (start == end) {
-//         let pI = partiallyIncludes(text, nodes[start].textContent);
-//         console.log(pI);
-//         if (pI.success) {
-//             nodes[start].textContent = nodes[start].textContent.replace(pI.result, `<span style="${type}:${value};">${pI.result}</span>`);
-//         }
-//     }
-
-//     let result = nodes.map(n => {
-//         console.warn(`NODE NAME: ${n.nodeName}`);
-//         if (n.nodeName.toLowerCase() == '#text') {
-//             console.warn("Returning #text", n);
-//             return n.textContent;
-//         } else {
-//             console.warn("Returning span", n.textContent);
-//             return n.outerHTML;
-//         }
-//     });
-//     console.log(`Result: ${result}`);
-//     textarea.innerHTML = result.join("");
-// }
-
 function hexToRgb(hex) {
     // Remove '#' if present
     hex = hex.replace(/^#?([A-Fa-f\d])([A-Fa-f\d])([A-Fa-f\d])$/i, '$1$2$3');
@@ -765,6 +670,8 @@ function applyStyle(type, value) {
     }
     console.log(list);
     let deleteSpan = false;
+    let currentSpan = null;
+    let deleteSpanFunc = () => { }
     for (let i = 0; i < tmp.length; i++) {
         if (tmp[i].indexOf('span style=') != -1) {
             console.warn(1);
@@ -775,13 +682,26 @@ function applyStyle(type, value) {
                 if (!new RegExp(`(.*?): (.*?);`).test(tmp[i])) {
                     console.warn(3);
                     // The span tag is empty 
-                    tmp[i] = null;
+                    deleteSpanFunc = () => {
+                        let t = tmp[i];
+                        currentSpan = t;
+                        tmp[i] = null;
+                        return t;
+                    }
                     deleteSpan = true;
                 } else {
                     tmp[i] = `<${tmp[i]}>`
                 }
-            } else {
-                console.log("Couldn't delete...", tmp[i], `${type}: ${(type == 'color' ? hexToRgb(value) : value)};`);
+            } else if (!new RegExp(`(.*?): (.*?);`).test(tmp[i])) {
+                console.warn(3);
+                // The span tag is empty 
+                deleteSpanFunc = () => {
+                    let t = tmp[i];
+                    currentSpan = t;
+                    tmp[i] = null;
+                    return t;
+                }
+                deleteSpan = true;
             }
         } else if (tmp[i].indexOf("/span") != -1) {
             if (deleteSpan) {
@@ -789,13 +709,23 @@ function applyStyle(type, value) {
                 tmp[i] = null;
                 console.log(tmp);
                 deleteSpan = false;
+                deleteSpanFunc();
+                deleteSpanFunc = () => { };
             } else {
                 tmp[i] = `<${tmp[i]}>`
             }
         }
     }
+    const pattern = new RegExp(`${type}: (.*?);`, "g");
+    if (deleteSpan && pattern.test(currentSpan)) {
+        // Span tag should be moved
+        let spanTag = deleteSpanFunc();
+        if (spanTag) {
+            tmp.push(`<${spanTag}>`);
+        }
+    }
     let content = tmp.map(e => {
-        if (e === null && e != "&nbsp") {
+        if (e === null) {
             return '';
         } else {
             return e;
@@ -805,16 +735,4 @@ function applyStyle(type, value) {
 
     content = `<span style="${type}: ${value};">${content}</span>`;
     textarea.innerHTML = textarea.innerHTML.replace(text.replace("\u00A0", "&nbsp;"), content);
-
-    // let db1 = text.replace(" ", "#");
-    // while (db1.indexOf(" ") != -1) {
-    //     db1 = db1.replace(" ", "#");
-    //     db1 = db1.replace("\u00A0", "&nbsp;")
-    // }
-    // let db2 = textarea.innerHTML.replace(" ", "#");
-    // while (db2.indexOf(" ") != -1) {
-    //     db2 = db2.replace(" ", "#");
-    //     db2 = db2.replace("\u00A0", "&nbsp;")
-    // }
-    // console.log(db1, "\n\n", db2);
 }

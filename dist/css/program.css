@@ -529,3 +529,10 @@ body {
     margin: 0;
     padding: 0;
 }
+
+#icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    filter: hue-rotate(232deg);
+}
